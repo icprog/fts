@@ -105,6 +105,12 @@ static int fts_digistar_test_startup_question()
 	return ret;
 }
 
+static void fts_digistar_fflushstdin(void)
+{
+    int c;
+    while( (c = fgetc( stdin )) != EOF && c != '\n' );
+}
+
 static int fts_digistar_ping(char * host, char * dev)
 {
 	int ret;
@@ -112,10 +118,9 @@ static int fts_digistar_ping(char * host, char * dev)
 	memset(&cmd, 0, sizeof(cmd));
 
 	snprintf(cmd, sizeof(cmd), "/bin/ping -I %s -c 4 %s", dev, host);
-	printf("depois de ping com [%s]\n", cmd);
 
 	ret = system(cmd);
-	syslog(LOG_CRIT,"Executando ping: [ %s ]");
+	syslog(LOG_CRIT,"Executando ping: [ %s ]",cmd);
 
 	if(WIFEXITED(ret))
 		return WEXITSTATUS(ret);
@@ -132,31 +137,46 @@ static void fts_digistar_product_id_show(void)
 
 static int fts_digistar_ethernet_wan_test(void)
 {
-	char cmd = 0;
+	char cmd = 'S';
 	char cmd_sys[256];
 	int ret = -1;
 
-	memset(&cmd_sys, 0, sizeof(cmd_sys));
-
-	printf("$QIniciar teste Ethernet Wan?\n");
+	printf("\n$QIniciar teste Ethernet Wan?\n");
 	syslog(LOG_CRIT,"$QIniciar teste Ethernet Wan?\n");
 
-	scanf("%c",&cmd);
-	if (toupper((int)cmd) != 'S')
-		return -1;
-
 	while (cmd == 'S'){
-		syslog(LOG_CRIT,"Configurando [eth0] com 10.1.1.99/255.255.0.0");
+		scanf("%c", &cmd);
+
+		if ( (cmd = (char)toupper((int)cmd)) != 'S'){
+			printf("$RSKIP\n");
+			return -1;
+		}
+
+		syslog(LOG_CRIT,"Configurando [%s] com 10.1.1.99/255.255.0.0", DEV_WAN);
+		memset(&cmd_sys, 0, sizeof(cmd_sys));
 		sprintf(cmd_sys, "/sbin/ifconfig eth0 up 10.1.1.99 netmask 255.255.0.0"); /* flush */
 		if (system(cmd_sys) != 0)
 			return -1;
 
-		if (fts_digistar_ping(HOST_PING, DEV_WAN) == 0)
+		if (fts_digistar_ping(HOST_PING, DEV_LAN) == 0)
 			ret = 0;
+		else
+			ret = -1;
+
+		if(ret == 0){
+			printf("\n$ROK\n\n");
+			syslog(LOG_CRIT,"$ROK\n");
+		}
+		else{
+			printf("\n$RERROR\n\n");
+			syslog(LOG_CRIT,"$RERROR\n");
+		}
+
+		printf("$QRepetir teste Ethernet Wan?\n");
+		syslog(LOG_CRIT,"$QRepetir teste Ethernet Wan?\n");
+		fts_digistar_fflushstdin();
 	}
 
-
-	printf("ok\n");
 	return 0;
 
 }
