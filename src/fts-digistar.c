@@ -25,6 +25,7 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <ctype.h>
+#include <fcntl.h>
 
 #include <net/if.h>
 #include <netinet/ip_icmp.h>
@@ -72,7 +73,7 @@ static void fts_digistar_product_id_show(void)
 
 static void fts_digistar_test_end(void)
 {
-	printf("$Ffim do teste de fabrica\n");
+	printf("\n$Ffim do teste de fabrica\n\n");
 	syslog(LOG_CRIT,"$Ffim do teste de fabrica\n");
 }
 
@@ -103,15 +104,28 @@ static int fts_digistar_test_startup(void)
 {
 	time_t start, work ;
 	char cmd[2];
+	int flags = 0, flags_bkp = 0;
 	memset(&cmd, 0, sizeof(cmd));
 
 	fts_digistar_welcome_string_show();
+
+	/*Tornar fgets non-blocking*/ //TODO
+#if 0
+	flags = fcntl(stdin, F_GETFL, 0);
+
+	printf("flags is %d\n",flags);
+
+	flags |= O_NONBLOCK;
+
+	printf("flags after %d\n",flags);
+
+	fcntl(stdin, F_SETFL, flags);
+#endif
 
 	time (&start) ;
 	work = start ;
 	while ( (work - start) < 3 ) time (&work);
 
-	/*Tornar fgets non-blocking*/ //TODO
 	fgets(cmd, sizeof(cmd), stdin);
 	fts_digistar_fflushstdin();
 
@@ -138,13 +152,13 @@ static int fts_digistar_ethernet_wan_test(void)
 			return -1;
 		}
 
-		syslog(LOG_CRIT,"Configurando [%s] com 10.1.1.99/255.255.0.0", DEV_WAN);
+		syslog(LOG_CRIT,"Configurando [%s] com %s/%s", WAN_DEV, WAN_IP, WAN_MASK);
 		memset(&cmd_sys, 0, sizeof(cmd_sys));
-		sprintf(cmd_sys, "/sbin/ifconfig eth0 up 10.1.1.99 netmask 255.255.0.0"); /* flush */
+		snprintf(cmd_sys, sizeof(cmd_sys), "/sbin/ifconfig %s up %s netmask %s", WAN_DEV, WAN_IP, WAN_MASK); /* flush */
 		if (system(cmd_sys) != 0)
 			return -1;
 
-		if (fts_digistar_ping(HOST_0_PING, DEV_WAN) == 0)
+		if (fts_digistar_ping(HOST_0_PING, WAN_DEV) == 0)
 			ret = 0;
 		else
 			ret = -1;
