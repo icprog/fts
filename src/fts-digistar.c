@@ -24,6 +24,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <time.h>
+#include <ctype.h>
 
 #include <net/if.h>
 #include <netinet/ip_icmp.h>
