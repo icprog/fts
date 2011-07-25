@@ -146,14 +146,15 @@ static int fts_digistar_ethernet_wan_test(void)
 	if (toupper((int)cmd) != 'S')
 		return -1;
 
-	syslog(LOG_CRIT,"Configurando [eth0] com 10.1.1.99/255.255.0.0");
-	sprintf(cmd_sys, "/sbin/ifconfig eth0 up 10.1.1.99 netmask 255.255.0.0"); /* flush */
-	if (system(cmd_sys) != 0)
-		return -1;
+	while (cmd == 'S'){
+		syslog(LOG_CRIT,"Configurando [eth0] com 10.1.1.99/255.255.0.0");
+		sprintf(cmd_sys, "/sbin/ifconfig eth0 up 10.1.1.99 netmask 255.255.0.0"); /* flush */
+		if (system(cmd_sys) != 0)
+			return -1;
 
-	if (fts_digistar_ping(HOST_PING, DEV_WAN) == 0)
-		ret = 0;
-
+		if (fts_digistar_ping(HOST_PING, DEV_WAN) == 0)
+			ret = 0;
+	}
 
 
 	printf("ok\n");
