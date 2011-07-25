@@ -1,6 +1,7 @@
 bin_PROGRAMS = \
-	fts-digistar
+	fts
 
 fts_SOURCES = \
 	fts-efm.c \
 	fts-digistar.c
+
