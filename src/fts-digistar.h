@@ -43,7 +43,11 @@
 #ifdef CONFIG_DIGISTAR_ETL8421
 #define MODEL "ETL-8421"
 #endif
-
 #endif
+
+/* General Defines*/
+#define HOST_PING "10.1.1.1"
+#define DEV_WAN "eth1"
+#define DEV_LAN "eth0"
 
 #endif /* FTS_DIGISTAR_H_ */

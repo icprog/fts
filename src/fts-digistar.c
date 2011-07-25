@@ -105,6 +105,24 @@ static int fts_digistar_test_startup_question()
 	return ret;
 }
 
+static int fts_digistar_ping(char * host, char * dev)
+{
+	int ret;
+	char cmd[64];
+	memset(&cmd, 0, sizeof(cmd));
+
+	snprintf(cmd, sizeof(cmd), "/bin/ping -I %s -c 4 %s", dev, host);
+	printf("depois de ping com [%s]\n", cmd);
+
+	ret = system(cmd);
+	syslog(LOG_CRIT,"Executando ping: [ %s ]");
+
+	if(WIFEXITED(ret))
+		return WEXITSTATUS(ret);
+	else
+		return -1;
+}
+
 static void fts_digistar_product_id_show(void)
 {
 	printf("$I%s\n",MODEL);
@@ -116,6 +134,7 @@ static int fts_digistar_ethernet_wan_test(void)
 {
 	char cmd = 0;
 	char cmd_sys[256];
+	int ret = -1;
 
 	memset(&cmd_sys, 0, sizeof(cmd_sys));
 
@@ -123,15 +142,20 @@ static int fts_digistar_ethernet_wan_test(void)
 	syslog(LOG_CRIT,"$QIniciar teste Ethernet Wan?\n");
 
 	scanf("%c",&cmd);
-	if (toupper((int)cmd) != 'S' )
+	if (toupper((int)cmd) != 'S')
 		return -1;
 
-	printf("ihaa\n");
+	syslog(LOG_CRIT,"Configurando [eth0] com 10.1.1.99/255.255.0.0");
+	sprintf(cmd_sys, "/sbin/ifconfig eth0 up 10.1.1.99 netmask 255.255.0.0"); /* flush */
+	if (system(cmd_sys) != 0)
+		return -1;
 
-//	sprintf(cmd_sys, "%s"); /* flush */
-//	if (system(cmd_sys) != 0)
-//		return -1;
+	if (fts_digistar_ping(HOST_PING, DEV_WAN) == 0)
+		ret = 0;
 
+
+
+	printf("ok\n");
 	return 0;
 
 }
@@ -167,7 +191,8 @@ static int main_fts()
 int main(int argc, char **argv) {
 	syslog(LOG_INFO, "FTS-Digistar Starting ...\n");
 
-	main_fts();
+	//main_fts();
+	fts_digistar_ethernet_wan_test();
 
 	syslog(LOG_INFO, "FTS-Digistar Exiting ...\n");
 	return EXIT_SUCCESS;
