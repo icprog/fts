@@ -46,7 +46,15 @@
 #endif
 
 /* General Defines*/
-#define HOST_PING "10.1.1.1"
+/*WAN HOST PING*/
+#define HOST_0_PING "10.1.1.1"
+
+/*LAN HOST PING*/
+#define HOST_1_PING "10.1.1.2"
+#define HOST_2_PING "10.1.1.3"
+#define HOST_3_PING "10.1.1.4"
+#define HOST_4_PING "10.1.1.5"
+
 #define DEV_WAN "eth1"
 #define DEV_LAN "eth0"
 
