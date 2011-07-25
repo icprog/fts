@@ -41,4 +41,5 @@ doc/doxygen/html
 *.a
 .*
 Debug
-fts-digistar
+fts
+
