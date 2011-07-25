@@ -63,11 +63,11 @@ static void fts_digistar_welcome_string_show()
 	printf("\tPress Y within 3 seconds to enter in test...\n\n");
 }
 
-static int fts_digistar_test_startup()
+static int fts_digistar_test_startup_question()
 {
 	char cmd=0;
 	int ret=-1;
-	pid_t pID, pID2,p;
+	pid_t pID, pID2;
 
 	fts_digistar_welcome_string_show();
 
@@ -85,7 +85,7 @@ static int fts_digistar_test_startup()
 			pID2 = fork();
 			if (pID2 == 0) {// child
 				scanf("%c", &cmd);
-				if (cmd == 'Y' || cmd == 'y')
+				if (toupper((int)cmd) == 'Y' )
 					ret = 1;
 				else
 					ret = 0;
@@ -104,6 +104,44 @@ static int fts_digistar_test_startup()
 	waitpid(pID2,NULL,0);
 	return ret;
 }
+
+static void fts_digistar_product_id_show(void)
+{
+	printf("$I%s\n",MODEL);
+	syslog(LOG_CRIT,"$Ffim do teste de fabrica\n");
+
+}
+
+static int fts_digistar_ethernet_wan_test(void)
+{
+	char cmd = 0;
+	char cmd_sys[256];
+
+	memset(&cmd_sys, 0, sizeof(cmd_sys));
+
+	printf("$QIniciar teste Ethernet Wan?\n");
+	syslog(LOG_CRIT,"$QIniciar teste Ethernet Wan?\n");
+
+	scanf("%c",&cmd);
+	if (toupper((int)cmd) != 'S' )
+		return -1;
+
+	printf("ihaa\n");
+
+//	sprintf(cmd_sys, "%s"); /* flush */
+//	if (system(cmd_sys) != 0)
+//		return -1;
+
+	return 0;
+
+}
+
+static void fts_digistar_test_end(void)
+{
+	printf("$Ffim do teste de fabrica\n");
+	syslog(LOG_CRIT,"$Ffim do teste de fabrica\n");
+}
+
 
 static int main_fts()
 {
@@ -127,13 +165,11 @@ static int main_fts()
 }
 
 int main(int argc, char **argv) {
-	syslog(LOG_INFO, "FTS-Digistar WORKING ...\n");
+	syslog(LOG_INFO, "FTS-Digistar Starting ...\n");
 
 	main_fts();
 
-	printf("fechou");
-
-	syslog(LOG_INFO, "FTS-Digistar exiting ...\n");
+	syslog(LOG_INFO, "FTS-Digistar Exiting ...\n");
 	return EXIT_SUCCESS;
 }
 
