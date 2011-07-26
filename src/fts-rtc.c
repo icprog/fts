@@ -15,30 +15,53 @@
 #include <librouter/libtime.h>
 
 #include "fts-digistar.h"
+#include "fts-rtc.h"
 
-static int rct_set_time(void)
+static int rtc_get_time(char * rtc_read, int size)
 {
-	return (librouter_time_set_date(6,6,1945,6,6,6));
+	return (librouter_time_get_date(rtc_read,size));
 }
 
-static int rct_get_time(char * rtc_buff, int size)
+static int rtc_set_time(char * rtc_loaded, int size)
 {
-	return (librouter_time_get_date(rct_buff,size));
+	if (librouter_time_set_date(RTC_DAY,RTC_MONTH,RTC_YEAR,RTC_HOUR,RTC_MIN,RTC_SEC) < 0)
+		return -1;
+
+	if (rtc_get_time(rtc_loaded,size) < 0)
+		return -1;
+
+	return 0;
+}
+
+static int rtc_compare_time(char *rtc_loaded, char * rtc_read)
+{
+	if (!strcmp(rtc_loaded,rtc_read))
+		return -1;
+	return 0;
 }
 
 static int rtc_tester(void)
 {
-	printf("dentro do rtc_tester\n\n");
-	char rtc_buff[64];
-	memset(&rtc_buff, 0, sizeof(rtc_buff));
+	char rtc_loaded[64];
+	char rtc_read[64];
+	memset(&rtc_loaded, 0, sizeof(rtc_loaded));
+	memset(&rtc_read, 0, sizeof(rtc_read));
 
-	if (rct_set_time() < 0)
+	printf("Configuracao RTC aplicada: ");
+	if (rtc_set_time(rtc_loaded, sizeof(rtc_loaded)) < 0){
 		return -1;
+	}
 
-	if (rct_get_time(rtc_buff, sizeof(rtc_buff)) < 0)
+	sleep(RTC_TIME_SLEEP);
+
+	printf("Feedback RTC apos %d seg. : ", RTC_TIME_SLEEP);
+	if (rtc_get_time(rtc_read, sizeof(rtc_read)) < 0){
 		return -1;
+	}
 
-	printf("buffer from rtc --> %s", rtc_buff);
+	if (rtc_compare_time(rtc_loaded,rtc_read) < 0){
+		return -1;
+	}
 
 	return 0;
 }

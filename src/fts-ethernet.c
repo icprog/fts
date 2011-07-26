@@ -23,8 +23,7 @@ static int ethernet_test(char *dev, char *ipaddr, char *mask, char *ipdest)
 	if (set_ipaddr(dev, ipaddr, mask) < 0)
 		return -1;
 
-	 while (((ret = ping(ipdest, dev, 64 + n)) == 0) && --n)
-		 ;
+	 while (((ret = ping(ipdest, dev, 64 + n)) == 0) && --n) ;
 
 	 if (ret < 0)
 		 printf("ERRO com ping tamanho %d\n", n + 64);

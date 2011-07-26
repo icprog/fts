@@ -314,8 +314,6 @@ int main(int argc, char **argv)
 #error "Board not suppoted"
 #endif
 
-
-
 	fts_register_test(&rtc_test);
 
 	main_fts();
