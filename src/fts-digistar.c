@@ -25,6 +25,7 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <ctype.h>
+#include <fcntl.h>
 
 #include <net/if.h>
 #include <netinet/ip_icmp.h>
@@ -33,10 +34,6 @@
 #include <arpa/inet.h>
 
 #include <librouter/options.h>
-
-#include "fts-digistar.h"
-#include "fts-efm.h"
-
 #ifdef OPTION_MODEM3G
 #include <librouter/dev.h> /* get_dev_link */
 #include <librouter/usb.h>
@@ -46,6 +43,11 @@
 #include <librouter/str.h>
 #endif
 
+#include "terminal.h"
+#include "fts-digistar.h"
+#include "fts-efm.h"
+#include "fts-ethernet.h"
+
 /* Temporary*/
 #define OPTION_FTS_DIGISTAR
 
@@ -54,59 +56,31 @@
 struct fts_test head_test = { .name = "Head test (should not be used)", .hw_init = NULL, .test = NULL,
                 .next = NULL, };
 
+#if 0
 static void fts_digistar_enable_log(int enable)
 {
 	freopen("/var/log/fts-digistar_log", "a+", stdin);
 	freopen("/var/log/fts-digistar_log", "a+", stdout);
 	freopen("/var/log/fts-digistar_log", "a+", stderr);
 }
+#endif
 
-static void fts_digistar_welcome_string_show()
+static void show_welcome_string()
 {
 	printf("\n\tWelcome to Digistar %s\n", SERIES);
 	printf("\tPress Y within 3 seconds to enter in test...\n\n");
 }
 
-static int fts_digistar_test_startup_question()
+static void show_product_id(void)
 {
-	char cmd = 0;
-	int ret = -1;
-	pid_t pID, pID2;
+	printf("$I%s\n",MODEL);
+	syslog(LOG_CRIT,"$Ffim do teste de fabrica\n");
+}
 
-	fts_digistar_welcome_string_show();
-
-	switch (pID = fork()) {
-	case -1:
-		syslog(LOG_ERR, "Could not startup FTS-Digistar\n");
-		break;
-
-	case 0: /* Child */
-		sleep(3);
-		exit(EXIT_SUCCESS);
-		break;
-
-	default: /* Parent */
-		pID2 = fork();
-		if (pID2 == 0) {// child
-			scanf("%c", &cmd);
-			if (toupper((int) cmd) == 'Y')
-				ret = 1;
-			else
-				ret = 0;
-			kill(pID, SIGKILL);
-			break;
-		} else if (pID2 < 0) { // failed to fork
-			syslog(LOG_ERR, "Could not startup FTS-Digistar\n");
-			break;
-		} else {
-			waitpid(pID, NULL, 0);// parent
-			kill(pID2, SIGKILL);
-			ret = 0;
-			break;
-		}
-	}
-	waitpid(pID2, NULL, 0);
-	return ret;
+static void fts_digistar_test_end(void)
+{
+	printf("\n$Ffim do teste de fabrica\n\n");
+	syslog(LOG_CRIT,"$Ffim do teste de fabrica\n");
 }
 
 static void fts_digistar_fflushstdin(void)
@@ -116,7 +90,14 @@ static void fts_digistar_fflushstdin(void)
 		;
 }
 
-int fts_digistar_ping(char *host, char *dev)
+void sig_handler(int signal)
+{
+	/* Just exit for now */
+	reload_termios();
+	exit(0);
+}
+
+int ping(char *host, char *dev)
 {
 	int ret;
 	char cmd[64];
@@ -133,68 +114,34 @@ int fts_digistar_ping(char *host, char *dev)
 		return -1;
 }
 
-static void fts_digistar_product_id_show(void)
+int set_ipaddr(char *dev, char *addr, char *mask)
 {
-	printf("$I%s\n", MODEL);
-	syslog(LOG_CRIT, "$Ffim do teste de fabrica\n");
-
-}
-
-static int fts_digistar_ethernet_wan_test(void)
-{
-	char cmd = 'S';
 	char cmd_sys[256];
-	int ret = -1;
 
-	printf("\n$QIniciar teste Ethernet Wan?\n");
-	syslog(LOG_CRIT, "$QIniciar teste Ethernet Wan?\n");
+	syslog(LOG_CRIT, "Configurando [%s] com %s/%s", dev, addr, mask);
 
-	while (cmd == 'S') {
-		scanf("%c", &cmd);
+	memset(&cmd_sys, 0, sizeof(cmd_sys));
+	snprintf(cmd_sys, sizeof(cmd_sys), "/sbin/ifconfig %s up %s netmask %s", dev, addr, mask); /* flush */
 
-		if ((cmd = (char) toupper((int) cmd)) != 'S') {
-			printf("$RSKIP\n");
-			return -1;
-		}
-
-		syslog(LOG_CRIT, "Configurando [%s] com 10.1.1.99/255.255.0.0", DEV_WAN);
-		memset(&cmd_sys, 0, sizeof(cmd_sys));
-		sprintf(cmd_sys, "/sbin/ifconfig eth0 up 10.1.1.99 netmask 255.255.0.0"); /* flush */
-		if (system(cmd_sys) != 0)
-			return -1;
-
-		if (fts_digistar_ping(HOST_PING, DEV_LAN) == 0)
-			ret = 0;
-		else
-			ret = -1;
-
-		if (ret == 0) {
-			printf("\n$ROK\n\n");
-			syslog(LOG_CRIT, "$ROK\n");
-		} else {
-			printf("\n$RERROR\n\n");
-			syslog(LOG_CRIT, "$RERROR\n");
-		}
-
-		printf("$QRepetir teste Ethernet Wan?\n");
-		syslog(LOG_CRIT, "$QRepetir teste Ethernet Wan?\n");
-		fts_digistar_fflushstdin();
-	}
+	if (system(cmd_sys) != 0)
+		return -1;
 
 	return 0;
-
 }
 
-static void fts_digistar_test_end(void)
+
+static int startup_test(void)
 {
-	printf("$Ffim do teste de fabrica\n");
-	syslog(LOG_CRIT, "$Ffim do teste de fabrica\n");
+	show_welcome_string();
+
+	return fts_get_answer();
 }
 
-static int fts_do_tests(void)
+
+
+static int do_tests(void)
 {
 	char cmd = 'S';
-	char cmd_sys[256];
 	int ret = -1;
 	struct fts_test *t = head_test.next;
 
@@ -219,6 +166,9 @@ static int fts_do_tests(void)
 				t->hw_init();
 
 			ret = t->test();
+
+			if (t->hw_stop != NULL)
+				t->hw_stop();
 
 			if (ret == 0) {
 				printf("\n$ROK\n\n");
@@ -249,38 +199,40 @@ static void fts_register_test(struct fts_test *t)
 
 static int main_fts()
 {
-	int i = 0, test = 0;
-	test = fts_digistar_test_startup();
-	printf("|TEST____ %d\n", test);
-	if (!test) {
-		printf("DEU MERDA - pid %d\n", getpid());
-		return 0;
-	}
+	signal(SIGALRM, sig_handler);
+	alarm(3); /* SIGALARM in 3 seconds */
 
-	printf("TESTANDO - pid %d\n", getpid());
-	int b = 5;
-	while (b) {
-		b--;
-		printf("b\n");
-		sleep(1);
+	if (!startup_test()){
+		printf("\nNo good..\n\n");
+		return -1;
 	}
+	printf("Starting test\n\n");
 
+	/*Show product model*/
+	show_product_id();
+
+	/*Test Functions...*/
+	do_tests();
+
+	/*End string*/
+	fts_digistar_test_end();
 	return 0;
 }
 
 int main(int argc, char **argv)
 {
 	syslog(LOG_INFO, "FTS-Digistar Starting ...\n");
+	save_termios();
 
-	//main_fts();
-	//fts_digistar_ethernet_wan_test();
 #ifdef OPTION_EFM
 	fts_register_test(&efm_test);
 #endif
+	fts_register_test(&ethlan_test);
 
-	fts_do_tests();
+	main_fts();
 
 	syslog(LOG_INFO, "FTS-Digistar Exiting ...\n");
+	reload_termios();
 	return EXIT_SUCCESS;
 }
 
