@@ -47,6 +47,7 @@
 #include "fts-efm.h"
 #include "fts-ethernet.h"
 #include "fts-rtc.h"
+#include "fts-flash.h"
 
 /* Temporary*/
 #define OPTION_FTS_DIGISTAR
@@ -315,6 +316,7 @@ int main(int argc, char **argv)
 #endif
 
 	fts_register_test(&rtc_test);
+	fts_register_test(&flash_test);
 
 	main_fts();
 
