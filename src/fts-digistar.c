@@ -86,8 +86,7 @@ static void fts_digistar_test_end(void)
 static void fts_digistar_fflushstdin(void)
 {
 	int c;
-	while ((c = fgetc(stdin)) != EOF && c != '\n')
-		;
+	while ((c = fgetc(stdin)) != EOF && c != '\n');
 }
 
 void sig_handler(int signal)
@@ -121,7 +120,7 @@ int set_ipaddr(char *dev, char *addr, char *mask)
 	syslog(LOG_CRIT, "Configurando [%s] com %s/%s", dev, addr, mask);
 
 	memset(&cmd_sys, 0, sizeof(cmd_sys));
-	snprintf(cmd_sys, sizeof(cmd_sys), "/sbin/ifconfig %s up %s netmask %s", dev, addr, mask); /* flush */
+	snprintf(cmd_sys, sizeof(cmd_sys), "/sbin/ifconfig %s up %s netmask %s", dev, addr, mask);
 
 	if (system(cmd_sys) != 0)
 		return -1;
