@@ -15,22 +15,31 @@
 #include "fts-digistar.h"
 #include "fts-ethernet.h"
 
-static int ethernet_wan_test(void)
+static int ethernet_test(char *dev, char *ipaddr, char *mask, char *ipdest)
 {
-	if (set_ipaddr(WAN_DEV, WAN_IP, WAN_MASK) < 0)
+	int ret = -1;
+	int n = 500;
+
+	if (set_ipaddr(dev, ipaddr, mask) < 0)
 		return -1;
 
-	return ping(HOST_0_PING, WAN_DEV);
+	 while (((ret = ping(ipdest, dev, 64 + n)) == 0) && --n)
+		 ;
 
+	 if (ret < 0)
+		 printf("ERRO com ping tamanho %d\n", n + 64);
+	 return ret;
+
+}
+
+static int ethernet_wan_test(void)
+{
+	return ethernet_test(WAN_DEV, WAN_IP, WAN_MASK, HOST_0_PING);
 }
 
 static int ethernet_lan_test(void)
 {
-	if (set_ipaddr(LAN_DEV, LAN_IP, LAN_MASK) < 0)
-		return -1;
-
-	return ping(HOST_0_PING, LAN_DEV);
-
+	return ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_0_PING);
 }
 
 

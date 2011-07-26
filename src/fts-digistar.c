@@ -34,14 +34,13 @@
 #include <arpa/inet.h>
 
 #include <librouter/options.h>
-#ifdef OPTION_MODEM3G
+
 #include <librouter/dev.h> /* get_dev_link */
 #include <librouter/usb.h>
 #include <librouter/device.h>
 #include <librouter/modem3G.h>
 #include <librouter/quagga.h>
 #include <librouter/str.h>
-#endif
 
 #include "terminal.h"
 #include "fts-digistar.h"
@@ -53,8 +52,13 @@
 
 #if defined (OPTION_FTS_DIGISTAR)
 
-struct fts_test head_test = { .name = "Head test (should not be used)", .hw_init = NULL, .test = NULL,
-                .next = NULL, };
+struct fts_test head_test = {
+		.name = "Head test (should not be used)",
+		.hw_init = NULL,
+		.test = NULL,
+		.hw_stop = NULL,
+                .next = NULL,
+};
 
 #if 0
 static void fts_digistar_enable_log(int enable)
@@ -83,13 +87,6 @@ static void fts_digistar_test_end(void)
 	syslog(LOG_CRIT,"$Ffim do teste de fabrica\n");
 }
 
-static void fts_digistar_fflushstdin(void)
-{
-	int c;
-	while ((c = fgetc(stdin)) != EOF && c != '\n')
-		;
-}
-
 void sig_handler(int signal)
 {
 	/* Just exit for now */
@@ -97,21 +94,106 @@ void sig_handler(int signal)
 	exit(0);
 }
 
-int ping(char *host, char *dev)
+static int in_cksum(unsigned short *buf, int sz)
 {
-	int ret;
-	char cmd[64];
-	memset(&cmd, 0, sizeof(cmd));
 
-	snprintf(cmd, sizeof(cmd), "/bin/ping -I %s -c 4 %s", dev, host);
+	int nleft = sz;
+	int sum = 0;
+	unsigned short *w = buf;
+	unsigned short ans = 0;
 
-	ret = system(cmd);
-	syslog(LOG_CRIT, "Executando ping: [ %s ]", cmd);
+	while (nleft > 1) {
+		sum += *w++;
+		nleft -= 2;
+	}
 
-	if (WIFEXITED(ret))
-		return WEXITSTATUS(ret);
-	else
+	if (nleft == 1) {
+		*(unsigned char *) (&ans) = *(unsigned char *) w;
+		sum += ans;
+	}
+
+	sum = (sum >> 16) + (sum & 0xFFFF);
+	sum += (sum >> 16);
+	ans = ~sum;
+	return ans;
+}
+
+int ping(char *ipaddr, char *device, int size)
+{
+
+	struct sockaddr_in pingaddr;
+	struct icmp *pkt;
+	int pingsock, c, i, ret = -1;
+	long arg;
+	char packet[size + ICMP_MINLEN];
+	struct ifreq ifr;
+
+	if (librouter_dev_get_link_running(device) <= 0)
 		return -1;
+
+	pingsock = socket(AF_INET, SOCK_RAW, 1); /* 1 == ICMP */
+	pingaddr.sin_family = AF_INET;
+	pingaddr.sin_addr.s_addr = inet_addr(ipaddr);
+
+	/* Force source address to be of the interface we want */
+	ifr.ifr_addr.sa_family = AF_INET;
+	strncpy(ifr.ifr_name, device, IFNAMSIZ - 1);
+	ioctl(pingsock, SIOCGIFADDR, &ifr);
+
+	if (bind(pingsock, (struct sockaddr*) &ifr.ifr_addr, sizeof(struct sockaddr_in)) == -1) {
+		perror("bind");
+		exit(2);
+	}
+
+	pkt = (struct icmp *) packet;
+	memset(pkt, 0, sizeof(packet));
+
+	pkt->icmp_type = ICMP_ECHO;
+	pkt->icmp_cksum = in_cksum((unsigned short *) pkt, sizeof(packet));
+
+	c = sendto(pingsock, packet, size + ICMP_MINLEN, 0, (struct sockaddr *) &pingaddr,
+	                sizeof(pingaddr));
+
+	/* Set non-blocking */
+	if ((arg = fcntl(pingsock, F_GETFL, NULL)) < 0) {
+		fprintf(stderr, "Error fcntl(..., F_GETFL) (%s)\n", strerror(errno));
+		return -1;
+	}
+
+	arg |= O_NONBLOCK;
+
+	if (fcntl(pingsock, F_SETFL, arg) < 0) {
+		fprintf(stderr, "Error fcntl(..., F_SETFL) (%s)\n", strerror(errno));
+		return -1;
+	}
+
+	/* listen for replies */
+	i = 30; /* Number of attempts */
+	while (i--) {
+		struct sockaddr_in from;
+		socklen_t fromlen = sizeof(from);
+
+		c = recvfrom(pingsock, packet, sizeof(packet), 0, (struct sockaddr *) &from,
+		                &fromlen);
+
+		if (c < 0) {
+			usleep(1000);
+			continue;
+		}
+
+		if (c >= 64) { /* ip + icmp */
+			struct iphdr *iphdr = (struct iphdr *) packet;
+
+			pkt = (struct icmp *) (packet + (iphdr->ihl << 2)); /* skip ip hdr */
+			if (pkt->icmp_type == ICMP_ECHOREPLY) {
+				ret = 0;
+				break;
+			}
+		}
+	}
+
+	close(pingsock);
+	return ret;
 }
 
 int set_ipaddr(char *dev, char *addr, char *mask)
@@ -141,7 +223,6 @@ static int startup_test(void)
 
 static int do_tests(void)
 {
-	char cmd = 'S';
 	int ret = -1;
 	struct fts_test *t = head_test.next;
 
@@ -154,12 +235,10 @@ static int do_tests(void)
 
 		printf("\n$QIniciar %s?\n", t->name);
 
-		while (cmd == 'S') {
-			scanf("%c", &cmd);
-
-			if ((cmd = (char) toupper((int) cmd)) != 'S') {
+		while (1) {
+			if (fts_get_answer() == 0) {
 				printf("$RSKIP\n");
-				return -1;
+				break;
 			}
 
 			if (t->hw_init != NULL)
@@ -180,7 +259,6 @@ static int do_tests(void)
 
 			printf("$QRepetir %s?\n", t->name);
 			syslog(LOG_CRIT, "$QRepetir %s?\n", t->name);
-			fts_digistar_fflushstdin();
 		}
 	}
 
@@ -223,10 +301,17 @@ int main(int argc, char **argv)
 	syslog(LOG_INFO, "FTS-Digistar Starting ...\n");
 	save_termios();
 
-#ifdef OPTION_EFM
-	fts_register_test(&efm_test);
-#endif
+#if defined(CONFIG_DIGISTAR_3G)
 	fts_register_test(&ethlan_test);
+	fts_register_test(&ethwan_test);
+#elif defined(CONFIG_DIGISTAR_EFM)
+	fts_register_test(&ethlan_test);
+	fts_register_test(&efm_test);
+#else
+#error "Board not suppoted"
+#endif
+
+
 
 	main_fts();
 
