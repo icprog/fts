@@ -47,6 +47,7 @@
 #include "fts-digistar.h"
 #include "fts-efm.h"
 #include "fts-ethernet.h"
+#include "fts-rtc.h"
 
 /* Temporary*/
 #define OPTION_FTS_DIGISTAR
@@ -74,7 +75,7 @@ static void show_welcome_string()
 static void show_product_id(void)
 {
 	printf("$I%s\n",MODEL);
-	syslog(LOG_CRIT,"$Ffim do teste de fabrica\n");
+	syslog(LOG_CRIT,"$I%s\n",MODEL);
 }
 
 static void fts_digistar_test_end(void)
@@ -128,15 +129,12 @@ int set_ipaddr(char *dev, char *addr, char *mask)
 	return 0;
 }
 
-
 static int startup_test(void)
 {
 	show_welcome_string();
 
 	return fts_get_answer();
 }
-
-
 
 static int do_tests(void)
 {
@@ -190,8 +188,7 @@ static void fts_register_test(struct fts_test *t)
 {
 	struct fts_test *n;
 
-	for (n = &head_test; n->next != NULL; n = n->next)
-		;
+	for (n = &head_test; n->next != NULL; n = n->next);
 
 	n->next = t;
 }
@@ -226,6 +223,8 @@ int main(int argc, char **argv)
 	fts_register_test(&efm_test);
 #endif
 	fts_register_test(&ethlan_test);
+
+	fts_register_test(&rtc_test);
 
 	main_fts();
 
