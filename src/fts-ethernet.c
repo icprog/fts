@@ -38,7 +38,22 @@ static int ethernet_wan_test(void)
 
 static int ethernet_lan_test(void)
 {
+#if defined(CONFIG_DIGISTAR_3G)
+	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_1_PING) < 0)
+		return -1;
+	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_2_PING) < 0)
+		return -1;
+	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_3_PING) < 0)
+		return -1;
+	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_4_PING) < 0)
+		return -1;
+
+#elif defined(CONFIG_DIGISTAR_EFM)
 	return ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_0_PING);
+
+#else
+#error "Board not suppoted"
+#endif
 }
 
 
