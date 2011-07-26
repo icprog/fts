@@ -30,7 +30,7 @@ static int do_dsp_connection(void)
 		.mode = GTI_CPE,
 	};
 
-	printf("Inicializando DSP... \n");
+	printf("Inicializando DSP... ");
 	/* Assure that the DSP is disabled */
 	if (librouter_efm_enable(0) < 0)
 		return -1;
@@ -53,7 +53,7 @@ static int check_dsp_connection(void)
 	int i = EFM_MAX_CONNECTION_TIME;
 	struct orionplus_stat stat[4];
 
-	printf("Esperando conexao dos canais SHDSL\n");
+	printf("Esperando conexao dos canais SHDSL ...");
 
 	while(--i) {
 		char msk = 0x0;
@@ -73,9 +73,11 @@ static int check_dsp_connection(void)
 	}
 
 	if (i == 0) {
-		printf("Timeout de conexao!\n");
+		printf("[TIMEOUT]\n");
 		return -1;
 	}
+
+	printf("[OK]\n");
 
 	return 0;
 }
