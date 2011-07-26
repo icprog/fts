@@ -50,4 +50,11 @@
 #define DEV_WAN "eth1"
 #define DEV_LAN "eth0"
 
+struct fts_test {
+	char name[256];
+	int (*hw_init)(void);
+	int (*test)(void);
+	struct fts_test *next;
+};
+
 #endif /* FTS_DIGISTAR_H_ */

@@ -35,6 +35,7 @@
 #include <librouter/options.h>
 
 #include "fts-digistar.h"
+#include "fts-efm.h"
 
 #ifdef OPTION_MODEM3G
 #include <librouter/dev.h> /* get_dev_link */
@@ -48,8 +49,10 @@
 /* Temporary*/
 #define OPTION_FTS_DIGISTAR
 
-
 #if defined (OPTION_FTS_DIGISTAR)
+
+struct fts_test head_test = { .name = "Head test (should not be used)", .hw_init = NULL, .test = NULL,
+                .next = NULL, };
 
 static void fts_digistar_enable_log(int enable)
 {
@@ -66,53 +69,54 @@ static void fts_digistar_welcome_string_show()
 
 static int fts_digistar_test_startup_question()
 {
-	char cmd=0;
-	int ret=-1;
+	char cmd = 0;
+	int ret = -1;
 	pid_t pID, pID2;
 
 	fts_digistar_welcome_string_show();
 
 	switch (pID = fork()) {
-		case -1:
+	case -1:
+		syslog(LOG_ERR, "Could not startup FTS-Digistar\n");
+		break;
+
+	case 0: /* Child */
+		sleep(3);
+		exit(EXIT_SUCCESS);
+		break;
+
+	default: /* Parent */
+		pID2 = fork();
+		if (pID2 == 0) {// child
+			scanf("%c", &cmd);
+			if (toupper((int) cmd) == 'Y')
+				ret = 1;
+			else
+				ret = 0;
+			kill(pID, SIGKILL);
+			break;
+		} else if (pID2 < 0) { // failed to fork
 			syslog(LOG_ERR, "Could not startup FTS-Digistar\n");
 			break;
-
-		case 0: /* Child */
-			sleep(3);
-			exit(EXIT_SUCCESS);
+		} else {
+			waitpid(pID, NULL, 0);// parent
+			kill(pID2, SIGKILL);
+			ret = 0;
 			break;
-
-		default: /* Parent */
-			pID2 = fork();
-			if (pID2 == 0) {// child
-				scanf("%c", &cmd);
-				if (toupper((int)cmd) == 'Y' )
-					ret = 1;
-				else
-					ret = 0;
-				kill( pID, SIGKILL );
-				break;
-			} else if (pID2 < 0) {          // failed to fork
-				syslog(LOG_ERR, "Could not startup FTS-Digistar\n");
-				break;
-			} else {
-				waitpid(pID,NULL,0);// parent
-				kill(pID2,SIGKILL);
-				ret = 0;
-				break;
-			}
+		}
 	}
-	waitpid(pID2,NULL,0);
+	waitpid(pID2, NULL, 0);
 	return ret;
 }
 
 static void fts_digistar_fflushstdin(void)
 {
-    int c;
-    while( (c = fgetc( stdin )) != EOF && c != '\n' );
+	int c;
+	while ((c = fgetc(stdin)) != EOF && c != '\n')
+		;
 }
 
-static int fts_digistar_ping(char * host, char * dev)
+int fts_digistar_ping(char *host, char *dev)
 {
 	int ret;
 	char cmd[64];
@@ -121,9 +125,9 @@ static int fts_digistar_ping(char * host, char * dev)
 	snprintf(cmd, sizeof(cmd), "/bin/ping -I %s -c 4 %s", dev, host);
 
 	ret = system(cmd);
-	syslog(LOG_CRIT,"Executando ping: [ %s ]",cmd);
+	syslog(LOG_CRIT, "Executando ping: [ %s ]", cmd);
 
-	if(WIFEXITED(ret))
+	if (WIFEXITED(ret))
 		return WEXITSTATUS(ret);
 	else
 		return -1;
@@ -131,8 +135,8 @@ static int fts_digistar_ping(char * host, char * dev)
 
 static void fts_digistar_product_id_show(void)
 {
-	printf("$I%s\n",MODEL);
-	syslog(LOG_CRIT,"$Ffim do teste de fabrica\n");
+	printf("$I%s\n", MODEL);
+	syslog(LOG_CRIT, "$Ffim do teste de fabrica\n");
 
 }
 
@@ -143,17 +147,17 @@ static int fts_digistar_ethernet_wan_test(void)
 	int ret = -1;
 
 	printf("\n$QIniciar teste Ethernet Wan?\n");
-	syslog(LOG_CRIT,"$QIniciar teste Ethernet Wan?\n");
+	syslog(LOG_CRIT, "$QIniciar teste Ethernet Wan?\n");
 
-	while (cmd == 'S'){
+	while (cmd == 'S') {
 		scanf("%c", &cmd);
 
-		if ( (cmd = (char)toupper((int)cmd)) != 'S'){
+		if ((cmd = (char) toupper((int) cmd)) != 'S') {
 			printf("$RSKIP\n");
 			return -1;
 		}
 
-		syslog(LOG_CRIT,"Configurando [%s] com 10.1.1.99/255.255.0.0", DEV_WAN);
+		syslog(LOG_CRIT, "Configurando [%s] com 10.1.1.99/255.255.0.0", DEV_WAN);
 		memset(&cmd_sys, 0, sizeof(cmd_sys));
 		sprintf(cmd_sys, "/sbin/ifconfig eth0 up 10.1.1.99 netmask 255.255.0.0"); /* flush */
 		if (system(cmd_sys) != 0)
@@ -164,17 +168,16 @@ static int fts_digistar_ethernet_wan_test(void)
 		else
 			ret = -1;
 
-		if(ret == 0){
+		if (ret == 0) {
 			printf("\n$ROK\n\n");
-			syslog(LOG_CRIT,"$ROK\n");
-		}
-		else{
+			syslog(LOG_CRIT, "$ROK\n");
+		} else {
 			printf("\n$RERROR\n\n");
-			syslog(LOG_CRIT,"$RERROR\n");
+			syslog(LOG_CRIT, "$RERROR\n");
 		}
 
 		printf("$QRepetir teste Ethernet Wan?\n");
-		syslog(LOG_CRIT,"$QRepetir teste Ethernet Wan?\n");
+		syslog(LOG_CRIT, "$QRepetir teste Ethernet Wan?\n");
 		fts_digistar_fflushstdin();
 	}
 
@@ -185,23 +188,78 @@ static int fts_digistar_ethernet_wan_test(void)
 static void fts_digistar_test_end(void)
 {
 	printf("$Ffim do teste de fabrica\n");
-	syslog(LOG_CRIT,"$Ffim do teste de fabrica\n");
+	syslog(LOG_CRIT, "$Ffim do teste de fabrica\n");
 }
 
+static int fts_do_tests(void)
+{
+	char cmd = 'S';
+	char cmd_sys[256];
+	int ret = -1;
+	struct fts_test *t = head_test.next;
+
+	if (t == NULL) {
+		printf("ERROR: No tests registered\n");
+		return -1;
+	}
+
+	for (; t != NULL; t = t->next) {
+
+		printf("\n$QIniciar %s?\n", t->name);
+
+		while (cmd == 'S') {
+			scanf("%c", &cmd);
+
+			if ((cmd = (char) toupper((int) cmd)) != 'S') {
+				printf("$RSKIP\n");
+				return -1;
+			}
+
+			if (t->hw_init != NULL)
+				t->hw_init();
+
+			ret = t->test();
+
+			if (ret == 0) {
+				printf("\n$ROK\n\n");
+				syslog(LOG_CRIT, "$ROK\n");
+			} else {
+				printf("\n$RERROR\n\n");
+				syslog(LOG_CRIT, "$RERROR\n");
+			}
+
+			printf("$QRepetir %s?\n", t->name);
+			syslog(LOG_CRIT, "$QRepetir %s?\n", t->name);
+			fts_digistar_fflushstdin();
+		}
+	}
+
+	return 0;
+}
+
+static void fts_register_test(struct fts_test *t)
+{
+	struct fts_test *n;
+
+	for (n = &head_test; n->next != NULL; n = n->next)
+		;
+
+	n->next = t;
+}
 
 static int main_fts()
 {
-	int i = 0,test = 0;
+	int i = 0, test = 0;
 	test = fts_digistar_test_startup();
-	printf("|TEST____ %d\n",test);
-	if (!test){
-		printf("DEU MERDA - pid %d\n",getpid());
+	printf("|TEST____ %d\n", test);
+	if (!test) {
+		printf("DEU MERDA - pid %d\n", getpid());
 		return 0;
 	}
 
-	printf("TESTANDO - pid %d\n",getpid());
-	int b=5;
-	while (b){
+	printf("TESTANDO - pid %d\n", getpid());
+	int b = 5;
+	while (b) {
 		b--;
 		printf("b\n");
 		sleep(1);
@@ -210,11 +268,17 @@ static int main_fts()
 	return 0;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 	syslog(LOG_INFO, "FTS-Digistar Starting ...\n");
 
 	//main_fts();
-	fts_digistar_ethernet_wan_test();
+	//fts_digistar_ethernet_wan_test();
+#ifdef OPTION_EFM
+	fts_register_test(&efm_test);
+#endif
+
+	fts_do_tests();
 
 	syslog(LOG_INFO, "FTS-Digistar Exiting ...\n");
 	return EXIT_SUCCESS;

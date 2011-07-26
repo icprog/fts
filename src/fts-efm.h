@@ -8,10 +8,8 @@
 #ifndef FTS_EFM_H_
 #define FTS_EFM_H_
 
-#define EFM_MAX_CONNECTION_TIME	120
+#define EFM_MAX_CONNECTION_TIME	180
 
-int do_dsp_connection(void);
-int check_dsp_connection(void);
-int check_dsp_parameters(void);
+struct fts_test efm_test;
 
 #endif /* FTS_EFM_H_ */

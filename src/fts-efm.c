@@ -10,6 +10,7 @@
 #include <librouter/options.h>
 #include <librouter/efm.h>
 
+#include "fts-digistar.h"
 #include "fts-efm.h"
 
 #ifdef OPTION_EFM
@@ -20,25 +21,31 @@
  * Configure DSP and establish EFM connection with a CO device
  *
  */
-int do_dsp_connection(void)
+static int do_dsp_connection(void)
 {
+	struct orionplus_conf conf = {
+		.mode = GTI_CPE,
+	};
+
+	printf("Inicializando DSP... \n");
 	/* Assure that the DSP is disabled */
 	if (librouter_efm_enable(0) < 0)
 		return -1;
 
 	/* Set CPE mode */
-	if (librouter_efm_set_mode(GTI_CPE) < 0)
+	if (librouter_efm_set_mode(&conf) < 0)
 		return -1;
 
 	/* Enable DSP connection at last */
 	if (librouter_efm_enable(1) < 0)
 		return -1;
+	printf("[OK]\n");
 
 	return 0;
 }
 
 
-int check_dsp_connection(void)
+static int check_dsp_connection(void)
 {
 	int i = EFM_MAX_CONNECTION_TIME;
 	struct orionplus_stat stat[4];
@@ -70,7 +77,7 @@ int check_dsp_connection(void)
 	return 0;
 }
 
-int check_dsp_parameters(void)
+static int check_dsp_parameters(void)
 {
 	struct orionplus_counters cnt;
 	struct orionplus_stat stat[4];
@@ -85,5 +92,23 @@ int check_dsp_parameters(void)
 
 	return 0;
 }
+
+static int efm_hw_init(void)
+{
+	if (do_dsp_connection() < 0) {
+		return -1;
+	}
+	if (check_dsp_connection() < 0) {
+		return -1;
+	}
+
+	//check_dsp_parameters();
+}
+
+struct fts_test efm_test = {
+		.name = "Teste da interface EFM",
+		.hw_init = efm_hw_init,
+		.test = NULL
+};
 
 #endif /* OPTION_EFM */
