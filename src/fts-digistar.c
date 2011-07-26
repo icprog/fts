@@ -200,13 +200,12 @@ static void fts_register_test(struct fts_test *t)
 static int main_fts()
 {
 	signal(SIGALRM, sig_handler);
-	alarm(3); /* SIGALARM in 3 seconds */
+	alarm(3); /* SIGALRM in 3 seconds */
 
-	if (!startup_test()){
-		printf("\nNo good..\n\n");
+	if (!startup_test())
 		return -1;
-	}
-	printf("Starting test\n\n");
+
+	alarm(0); /* Remove schedule of SIGALRM */
 
 	/*Show product model*/
 	show_product_id();
