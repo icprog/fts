@@ -48,6 +48,7 @@ static int ethernet_lan_test(void)
 	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_4_PING) < 0)
 		return -1;
 
+	return 0;
 #elif defined(CONFIG_DIGISTAR_EFM)
 	return ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_0_PING);
 
