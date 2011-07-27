@@ -89,11 +89,13 @@ static void fts_digistar_test_end(void)
 	syslog(LOG_CRIT,"$Ffim do teste de fabrica\n");
 }
 
+#if 0
 static void fts_digistar_fflushstdin(void)
 {
 	int c;
 	while ((c = fgetc(stdin)) != EOF && c != '\n');
 }
+#endif
 
 void sig_handler(int signal)
 {
