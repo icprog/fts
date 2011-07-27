@@ -46,9 +46,8 @@
 #include "fts-digistar.h"
 #include "fts-efm.h"
 #include "fts-ethernet.h"
-
-/* Temporary*/
-#define OPTION_FTS_DIGISTAR
+#include "fts-rtc.h"
+#include "fts-flash.h"
 
 #if defined (OPTION_FTS_DIGISTAR)
 
@@ -78,7 +77,7 @@ static void show_welcome_string()
 static void show_product_id(void)
 {
 	printf("$I%s\n",MODEL);
-	syslog(LOG_CRIT,"$Ffim do teste de fabrica\n");
+	syslog(LOG_CRIT,"$I%s\n",MODEL);
 }
 
 static void fts_digistar_test_end(void)
@@ -86,6 +85,14 @@ static void fts_digistar_test_end(void)
 	printf("\n$Ffim do teste de fabrica\n\n");
 	syslog(LOG_CRIT,"$Ffim do teste de fabrica\n");
 }
+
+#if 0
+static void fts_digistar_fflushstdin(void)
+{
+	int c;
+	while ((c = fgetc(stdin)) != EOF && c != '\n');
+}
+#endif
 
 void sig_handler(int signal)
 {
@@ -203,7 +210,7 @@ int set_ipaddr(char *dev, char *addr, char *mask)
 	syslog(LOG_CRIT, "Configurando [%s] com %s/%s", dev, addr, mask);
 
 	memset(&cmd_sys, 0, sizeof(cmd_sys));
-	snprintf(cmd_sys, sizeof(cmd_sys), "/sbin/ifconfig %s up %s netmask %s", dev, addr, mask); /* flush */
+	snprintf(cmd_sys, sizeof(cmd_sys), "/sbin/ifconfig %s up %s netmask %s", dev, addr, mask);
 
 	if (system(cmd_sys) != 0)
 		return -1;
@@ -211,15 +218,12 @@ int set_ipaddr(char *dev, char *addr, char *mask)
 	return 0;
 }
 
-
 static int startup_test(void)
 {
 	show_welcome_string();
 
 	return fts_get_answer();
 }
-
-
 
 static int do_tests(void)
 {
@@ -269,8 +273,7 @@ static void fts_register_test(struct fts_test *t)
 {
 	struct fts_test *n;
 
-	for (n = &head_test; n->next != NULL; n = n->next)
-		;
+	for (n = &head_test; n->next != NULL; n = n->next);
 
 	n->next = t;
 }
@@ -311,7 +314,8 @@ int main(int argc, char **argv)
 #error "Board not suppoted"
 #endif
 
-
+	fts_register_test(&rtc_test);
+	fts_register_test(&flash_test);
 
 	main_fts();
 

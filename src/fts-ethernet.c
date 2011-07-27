@@ -23,8 +23,7 @@ static int ethernet_test(char *dev, char *ipaddr, char *mask, char *ipdest)
 	if (set_ipaddr(dev, ipaddr, mask) < 0)
 		return -1;
 
-	 while (((ret = ping(ipdest, dev, 64 + n)) == 0) && --n)
-		 ;
+	 while (((ret = ping(ipdest, dev, 64 + n)) == 0) && --n) ;
 
 	 if (ret < 0)
 		 printf("ERRO com ping tamanho %d\n", n + 64);
@@ -39,7 +38,23 @@ static int ethernet_wan_test(void)
 
 static int ethernet_lan_test(void)
 {
+#if defined(CONFIG_DIGISTAR_3G)
+	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_1_PING) < 0)
+		return -1;
+	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_2_PING) < 0)
+		return -1;
+	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_3_PING) < 0)
+		return -1;
+	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_4_PING) < 0)
+		return -1;
+
+	return 0;
+#elif defined(CONFIG_DIGISTAR_EFM)
 	return ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_0_PING);
+
+#else
+#error "Board not suppoted"
+#endif
 }
 
 
