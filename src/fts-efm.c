@@ -82,13 +82,15 @@ static int check_dsp_connection(void)
 		return -1;
 	}
 
-	sleep(2); /* Wait link to settle */
-
 	printf("[OK]\n");
+
+	printf("Conexao concluida em %d segundos\n", EFM_MAX_CONNECTION_TIME - i);
+
 
 	return 0;
 }
 
+#if 0
 static int check_dsp_parameters(void)
 {
 	struct orionplus_counters cnt;
@@ -103,6 +105,7 @@ static int check_dsp_parameters(void)
 
 	return 0;
 }
+#endif
 
 static int efm_hw_init(void)
 {
@@ -126,9 +129,18 @@ static int efm_do_test(void)
 {
 	int ret = -1;
 	int n = 500;
+	int i;
 
 	if (set_ipaddr(EFM_DEV, EFM_IPADDR, EFM_IPMASK) < 0)
 		return -1;
+
+	for (i = 0; i < 60; i++) {
+		if (ping(EFM_IPDEST, EFM_DEV, 100) == 0)
+			break;
+		sleep(1);
+	}
+
+	printf("Tempo de espera até primeiro ping voltar: %d segundos\n", i);
 
 	 while (((ret = ping(EFM_IPDEST, EFM_DEV, 64 + n)) == 0) && --n)
 		 ;
@@ -159,6 +171,7 @@ struct fts_test efm_test = {
 		//.hw_init = NULL,
 		.test = efm_do_test,
 		.hw_stop = efm_hw_stop,
+		//.hw_stop = NULL,
 };
 
 #endif /* OPTION_EFM */

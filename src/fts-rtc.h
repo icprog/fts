@@ -9,14 +9,15 @@
 #define FTS_RTC_H_
 
 /* General Defines*/
-#define RTC_DAY 6
-#define RTC_MONTH 6
-#define RTC_YEAR 1976
-#define RTC_HOUR 06
-#define RTC_MIN 06
-#define RTC_SEC 06
+#define RTC_DAY 	27
+#define RTC_MONTH 	7
+#define RTC_YEAR 	2011
+#define RTC_HOUR 	18
+#define RTC_MIN 	26
+#define RTC_SEC 	30
 
-#define RTC_TIME_SLEEP 3
+#define RTC_TIME_SLEEP 	1
+#define RTC_NUM_READS	5
 
 struct fts_test rtc_test;
 
