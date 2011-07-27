@@ -9,6 +9,7 @@
 #define FTS_FLASH_H_
 
 /* General Defines*/
+#define DEV_DEFAULT_CONFIG "/etc/default-config"
 
 struct fts_test flash_test;
 

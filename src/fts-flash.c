@@ -11,20 +11,18 @@
 #include <stdlib.h>
 
 #include <librouter/options.h>
+#include <librouter/nv.h>
 
 #include "fts-digistar.h"
 #include "fts-flash.h"
 
 static int flash_tester(void)
 {
-#if defined(CONFIG_DIGISTAR_3G)
+	printf("Carregando configuracao [default] para flash\n");
+	if (librouter_nv_save_configuration(DEV_DEFAULT_CONFIG) < 0)
+		return -1;
 
-
-#elif defined(CONFIG_DIGISTAR_EFM)
-
-#else
-#error "Board not suppoted"
-#endif
+	return 0;
 }
 
 struct fts_test flash_test = {
