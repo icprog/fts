@@ -49,9 +49,6 @@
 #include "fts-rtc.h"
 #include "fts-flash.h"
 
-/* Temporary*/
-#define OPTION_FTS_DIGISTAR
-
 #if defined (OPTION_FTS_DIGISTAR)
 
 struct fts_test head_test = {

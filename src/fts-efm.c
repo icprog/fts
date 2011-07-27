@@ -11,7 +11,9 @@
 #include <stdlib.h>
 
 #include <librouter/options.h>
+#ifdef OPTION_EFM
 #include <librouter/efm.h>
+#endif
 
 #include "fts-digistar.h"
 #include "fts-efm.h"
