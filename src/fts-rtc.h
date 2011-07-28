@@ -9,9 +9,9 @@
 #define FTS_RTC_H_
 
 /* General Defines*/
-#define RTC_DAY 	27
-#define RTC_MONTH 	7
-#define RTC_YEAR 	2011
+#define RTC_DAY 	15
+#define RTC_MONTH 	05
+#define RTC_YEAR 	2014
 #define RTC_HOUR 	18
 #define RTC_MIN 	26
 #define RTC_SEC 	30
