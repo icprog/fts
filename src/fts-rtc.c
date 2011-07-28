@@ -10,6 +10,11 @@
 #include <syslog.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
+
+#include <linux/i2c.h>
+#include <linux/i2c-dev.h>
+#include <linux/rtc.h>
 
 #include <librouter/options.h>
 #include <librouter/libtime.h>
@@ -17,25 +22,42 @@
 #include "fts-digistar.h"
 #include "fts-rtc.h"
 
-static int rtc_get_time(char * rtc_read, int size)
+static struct tm ctm;
+
+static int rtc_get_time(struct tm *tm_time)
 {
-	return (librouter_time_get_date(rtc_read,size));
+	return librouter_time_get_rtc_date(tm_time);
 }
 
-static int rtc_set_time(char * rtc_loaded, int size)
+static int rtc_set_time(struct tm *tm_time)
 {
 	if (librouter_time_set_date(RTC_DAY, RTC_MONTH, RTC_YEAR, RTC_HOUR, RTC_MIN, RTC_SEC) < 0)
 		return -1;
 
-	if (rtc_get_time(rtc_loaded, size) < 0)
+	if (rtc_get_time(tm_time) < 0)
 		return -1;
 
 	return 0;
 }
 
-static int rtc_compare_time(char *rtc_loaded, char *rtc_read)
+static int rtc_compare_time(struct tm *t1, struct tm *t2)
 {
-	if (!strcmp(rtc_loaded, rtc_read))
+	if (t1->tm_min != t2->tm_min)
+		return -1;
+
+	if (t1->tm_mday != t2->tm_mday)
+		return -1;
+
+	if (t1->tm_mon != t2->tm_mon)
+		return -1;
+
+	if (t1->tm_year != t2->tm_year)
+		return -1;
+
+	if (t1->tm_hour != t2->tm_hour)
+		return -1;
+
+	if (t1->tm_sec != (t2->tm_sec - 1))
 		return -1;
 
 	return 0;
@@ -43,41 +65,62 @@ static int rtc_compare_time(char *rtc_loaded, char *rtc_read)
 
 static int rtc_tester(void)
 {
-	char rtc_loaded[64];
-	char rtc_read[64];
+	struct tm time1, time2;
 	int i = 0;
 
-	memset(&rtc_loaded, 0, sizeof(rtc_loaded));
-	memset(&rtc_read, 0, sizeof(rtc_read));
-
-
-	printf("Configuracao RTC aplicada: ");
-	if (rtc_set_time(rtc_loaded, sizeof(rtc_loaded)) < 0) {
+	if (rtc_set_time(&time1) < 0) {
 		return -1;
 	}
+
+	printf("Configuracao RTC aplicada!\n");
+
+	usleep(5000);
 
 	while(i++ < RTC_NUM_READS) {
 		sleep(RTC_TIME_SLEEP);
 
-		printf("Leitura do RTC apos %d seg. : ", i);
-		if (rtc_get_time(rtc_read, sizeof(rtc_read)) < 0) {
+		printf("Leitura do RTC apos %d seg.\n", i);
+
+		if (rtc_get_time(&time2) < 0) {
 			return -1;
 		}
 
-		if (rtc_compare_time(rtc_loaded, rtc_read) < 0) {
+		if (rtc_compare_time(&time1, &time2) < 0) {
 			return -1;
 		}
 
-		memcpy(rtc_loaded, rtc_read, sizeof(rtc_loaded));
+		memcpy(&time1, &time2, sizeof(struct tm));
 	}
 
 	return 0;
 }
 
+static int rtc_test_init(void)
+{
+	char buf[128];
+	printf("Salvando Hora do Sistema:");
+	librouter_time_get_rtc_date(&ctm);
+	strftime(buf, sizeof(buf), "%a %b %e %H:%M:%S %Z %Y", &ctm);
+	puts(buf);
+	return 0;
+}
+
+static int rtc_test_exit(void)
+{
+	printf("Restaurando Hora do Sistema: ");
+	if (librouter_time_set_date_from_tm(&ctm) < 0) {
+		printf("[FALHA]\n");
+		return -1;
+	}
+
+	printf("[OK]\n");
+	return 0;
+}
+
 struct fts_test rtc_test = {
 		.name = "Teste do RTC - Real Time Clock",
-		.hw_init = NULL,
+		.hw_init = rtc_test_init,
 		.test = rtc_tester,
-                .hw_stop = NULL,
+                .hw_stop = rtc_test_exit,
                 .next = NULL,
 };
