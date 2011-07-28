@@ -306,7 +306,9 @@ int main(int argc, char **argv)
 
 #if defined(CONFIG_DIGISTAR_3G)
 	fts_register_test(&ethlan_test);
+#ifndef CONFIG_DIGISTAR_RCG800
 	fts_register_test(&ethwan_test);
+#endif
 #elif defined(CONFIG_DIGISTAR_EFM)
 	fts_register_test(&ethlan_test);
 	fts_register_test(&efm_test);
