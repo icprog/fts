@@ -120,16 +120,12 @@ static int efm_hw_init(void)
 	return 0;
 }
 
-#define EFM_IPADDR "15.0.0.1"
-#define EFM_IPMASK "255.0.0.0"
-#define EFM_DEV "eth1"
-#define EFM_IPDEST "15.0.0.2"
-
 static int efm_do_test(void)
 {
 	int ret = -1;
-	int n = 500;
+	int n = 1000;
 	int i;
+	int err = 0;
 
 	if (set_ipaddr(EFM_DEV, EFM_IPADDR, EFM_IPMASK) < 0)
 		return -1;
@@ -142,8 +138,17 @@ static int efm_do_test(void)
 
 	printf("Tempo de espera até primeiro ping voltar: %d segundos\n", i);
 
-	 while (((ret = ping(EFM_IPDEST, EFM_DEV, 64 + n)) == 0) && --n)
-		 ;
+	 while (--n) {
+		 ret = ping(EFM_IPDEST, EFM_DEV, 64 + n);
+		 if (ret < 0)
+			 err++;
+
+		 if (err > EFM_MAX_ACCEPTED_ERRORS)
+			 break;
+
+		 ret = 0;
+	 }
+
 
 	 if (ret < 0)
 		 printf("ERRO com ping tamanho %d\n", n + 64);
@@ -168,10 +173,10 @@ static int efm_hw_stop(void)
 struct fts_test efm_test = {
 		.name = "Teste da interface EFM",
 		.hw_init = efm_hw_init,
-		//.hw_init = NULL,
 		.test = efm_do_test,
 		.hw_stop = efm_hw_stop,
-		//.hw_stop = NULL,
+		.next = NULL,
+
 };
 
 #endif /* OPTION_EFM */
