@@ -27,30 +27,39 @@ static int ethernet_test(char *dev, char *ipaddr, char *mask, char *ipdest)
 
 	 if (ret < 0)
 		 printf("ERRO com ping tamanho %d\n", n + 64);
-	 return ret;
 
+	 return ret;
 }
 
 static int ethernet_wan_test(void)
 {
+	printf("WAN: Executando Ping para host %s\n",HOST_0_PING);
 	return ethernet_test(WAN_DEV, WAN_IP, WAN_MASK, HOST_0_PING);
 }
 
 static int ethernet_lan_test(void)
 {
 #if defined(CONFIG_DIGISTAR_3G)
+	printf("LAN: Executando Ping para host %s\n",HOST_1_PING);
 	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_1_PING) < 0)
 		return -1;
+
+	printf("LAN: Executando Ping para host %s\n",HOST_2_PING);
 	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_2_PING) < 0)
 		return -1;
+
+	printf("LAN: Executando Ping para host %s\n",HOST_3_PING);
 	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_3_PING) < 0)
 		return -1;
+
+	printf("LAN: Executando Ping para host %s\n",HOST_4_PING);
 	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_4_PING) < 0)
 		return -1;
 
 	return 0;
 #elif defined(CONFIG_DIGISTAR_EFM)
-	return ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_0_PING);
+	printf("LAN: Executando Ping para host %s\n",HOST_1_PING);
+	return ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_1_PING);
 
 #else
 #error "Board not suppoted"

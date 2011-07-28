@@ -10,6 +10,8 @@
 
 /* General Defines*/
 #define DEV_DEFAULT_CONFIG "/etc/default-config"
+#define FLASH_FILE_SAVED_DATA "/var/run/fts/flash_saved_config"
+#define FLASH_FILE_TEST_DATA "/var/run/fts/flash_test_config"
 
 struct fts_test flash_test;
 
