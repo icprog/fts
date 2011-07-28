@@ -11,15 +11,15 @@
 /* General Defines*/
 /* WAN */
 #define WAN_IP "10.1.1.99"
-#define WAN_MASK "255.255.0.0"
+#define WAN_MASK "255.255.255.0"
 #define WAN_DEV "eth1"
 
 /* WAN HOST PING */
-#define HOST_0_PING "192.168.100.130"
+#define HOST_0_PING "10.1.1.5"
 
 
 /* LAN */
-#define LAN_IP "192.168.100.131"
+#define LAN_IP "10.1.1.90"
 #define LAN_MASK "255.255.255.0"
 #define LAN_DEV "eth0"
 
