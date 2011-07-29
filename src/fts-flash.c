@@ -80,7 +80,7 @@ static int flash_load_test_file(void)
 
 static int flash_restore_residual_data(void)
 {
-	printf("Carregando configuracao salva para flash\n");
+	printf("Restaurando configuracao salva para flash\n");
 	if (librouter_nv_save_configuration(FLASH_FILE_SAVED_DATA) < 0)
 		return -1;
 
