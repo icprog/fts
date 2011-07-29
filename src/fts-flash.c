@@ -117,6 +117,7 @@ static int flash_backup(void)
 
 	return 0;
 }
+
 static int flash_tester(void)
 {
 	if (flash_backup() < 0)
