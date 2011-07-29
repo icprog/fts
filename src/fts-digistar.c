@@ -245,24 +245,29 @@ static int do_tests(void)
 				break;
 			}
 
-			if (t->hw_init != NULL)
-				t->hw_init();
+			if (t->hw_init != NULL) {
+				ret = t->hw_init();
+				if  (ret < 0)
+					goto test_err;
+			}
 
-			ret = t->test();
+			if (t->test != NULL) {
+				ret = t->test();
+				if  (ret < 0)
+					goto test_err;
+			}
 
 			if (t->hw_stop != NULL)
-				t->hw_stop();
+				ret = t->hw_stop();
 
+test_err:
 			if (ret == 0) {
 				printf("\n$ROK\n\n");
-				syslog(LOG_CRIT, "$ROK\n");
 			} else {
 				printf("\n$RERROR\n\n");
-				syslog(LOG_CRIT, "$RERROR\n");
 			}
 
 			printf("$QRepetir %s?\n", t->name);
-			syslog(LOG_CRIT, "$QRepetir %s?\n", t->name);
 		}
 	}
 
