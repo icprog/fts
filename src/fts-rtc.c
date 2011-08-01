@@ -109,7 +109,7 @@ static int rtc_test_exit(void)
 {
 	printf("Restaurando Hora do Sistema: ");
 	if (librouter_time_set_date_from_tm(&ctm) < 0) {
-		printf("[FALHA]\n");
+		printf("[FAIL]\n");
 		return -1;
 	}
 

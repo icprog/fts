@@ -39,34 +39,63 @@ static int ethernet_test(char *dev, char *ipaddr, char *mask, char *ipdest)
 
 static int ethernet_wan_test(void)
 {
-	printf("WAN: Executando Ping para host %s\n",HOST_0_PING);
-	return ethernet_test(WAN_DEV, WAN_IP, WAN_MASK, HOST_0_PING);
+	printf("WAN: Executando Ping para host %s",HOST_0_PING);
+	if (ethernet_test(WAN_DEV, WAN_IP, WAN_MASK, HOST_0_PING) < 0){
+		printf(" - [FAIL]\n");
+		return -1;
+	}
+	else
+		printf(" - [OK]\n");
+
+	return 0;
 }
 
 static int ethernet_lan_test(void)
 {
 #if defined(CONFIG_DIGISTAR_3G)
-	printf("LAN: Executando Ping para host %s\n",HOST_1_PING);
-	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_1_PING) < 0)
+	printf("LAN: Executando Ping para host %s",HOST_1_PING);
+	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_1_PING) < 0){
+		printf(" - [FAIL]\n");
 		return -1;
+	}
+	else
+		printf(" - [OK]\n");
 
 	printf("LAN: Executando Ping para host %s\n",HOST_2_PING);
-	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_2_PING) < 0)
+	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_2_PING) < 0){
+		printf(" - [FAIL]\n");
 		return -1;
+	}
+	else
+		printf(" - [OK]\n");
 
 	printf("LAN: Executando Ping para host %s\n",HOST_3_PING);
-	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_3_PING) < 0)
+	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_3_PING) < 0){
+		printf(" - [FAIL]\n");
 		return -1;
+	}
+	else
+		printf(" - [OK]\n");
 
 	printf("LAN: Executando Ping para host %s\n",HOST_4_PING);
-	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_4_PING) < 0)
+	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_4_PING) < 0){
+		printf(" - [FAIL]\n");
 		return -1;
+	}
+	else
+		printf(" - [OK]\n");
 
 	return 0;
 #elif defined(CONFIG_DIGISTAR_EFM)
-	printf("LAN: Executando Ping para host %s\n",HOST_1_PING);
-	return ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_1_PING);
+	printf("LAN: Executando Ping para host %s",HOST_1_PING);
+	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_1_PING) < 0){
+		printf(" - [FAIL]\n");
+		return -1;
+	}
+	else
+		printf(" - [OK]\n");
 
+	return 0;
 #else
 #error "Board not suppoted"
 #endif
