@@ -98,7 +98,7 @@ static int rtc_tester(void)
 static int rtc_test_init(void)
 {
 	char buf[128];
-	printf("Salvando Hora do Sistema:");
+	printf("Salvando Hora do Sistema: ");
 	librouter_time_get_rtc_date(&ctm);
 	strftime(buf, sizeof(buf), "%a %b %e %H:%M:%S %Z %Y", &ctm);
 	puts(buf);
