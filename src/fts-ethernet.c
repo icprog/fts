@@ -23,12 +23,18 @@ static int ethernet_test(char *dev, char *ipaddr, char *mask, char *ipdest)
 	if (set_ipaddr(dev, ipaddr, mask) < 0)
 		return -1;
 
-	 while (((ret = ping(ipdest, dev, 64 + n)) == 0) && --n) ;
+	sleep(1);
 
-	 if (ret < 0)
-		 printf("ERRO com ping tamanho %d\n", n + 64);
+	while (n){
+		 if ( (ret = ping(ipdest, dev, 64 + n)) == 0)
+			 break;
+		 n--;
+	}
 
-	 return ret;
+	if (ret < 0)
+	 printf("ERRO com ping tamanho %d\n", n + 64);
+
+	return ret;
 }
 
 static int ethernet_wan_test(void)
