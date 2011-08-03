@@ -29,6 +29,7 @@
 #define HOST_4_PING 	"10.1.1.4"
 
 struct fts_test ethwan_test;
+struct fts_test ethwan_SFP_test;
 struct fts_test ethlan_test;
 
 #endif /* FTS_ETHERNET_H_ */

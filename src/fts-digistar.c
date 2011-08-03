@@ -310,10 +310,25 @@ int main(int argc, char **argv)
 	save_termios();
 
 #if defined(CONFIG_DIGISTAR_3G)
+
+/* ###############################################################
+ * RCG 1000 – Produto completo
+ * RCG 800 – Produto sem a WAN Gb (tanto a elétrica quanto a ótica)
+ * RCG 700 – Produto sem 3G (SIM Card, módulo 3G e USB)
+ * ###############################################################*/
+
 	fts_register_test(&ethlan_test);
+
 #ifndef CONFIG_DIGISTAR_RCG800
 	fts_register_test(&ethwan_test);
+	fts_register_test(&ethwan_SFP_test);
 #endif
+
+#ifndef CONFIG_DIGISTAR_RCG700
+	fts_register_test(&modem3g_test);
+	fts_register_test(&usb_test);
+#endif
+
 #elif defined(CONFIG_DIGISTAR_EFM)
 	fts_register_test(&ethlan_test);
 	fts_register_test(&efm_test);
