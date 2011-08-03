@@ -48,6 +48,8 @@
 #include "fts-ethernet.h"
 #include "fts-rtc.h"
 #include "fts-flash.h"
+#include "fts-modem3g.h"
+#include "fts-usb.h"
 
 #if defined (OPTION_FTS_DIGISTAR)
 
