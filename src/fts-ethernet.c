@@ -35,8 +35,8 @@ static int ethernet_test(char *dev, char *ipaddr, char *mask, char *ipdest)
 		printf(" - [FAIL]\n");
 		printf("%% ERRO com ping tamanho %d\n", n + 64);
 	}
-
-	printf(" - [OK]\n");
+	else
+		printf(" - [OK]\n");
 
 	return ret;
 }
@@ -44,6 +44,7 @@ static int ethernet_test(char *dev, char *ipaddr, char *mask, char *ipdest)
 static int ethernet_wan_SFP_test(void)
 {
 	printf("[OK] - Not yet working\n");
+
 	return 0;
 }
 

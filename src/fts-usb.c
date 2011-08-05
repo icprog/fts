@@ -10,13 +10,14 @@
 #include <syslog.h>
 #include <string.h>
 #include <stdlib.h>
+#include <linux/types.h>
 
 #include <librouter/options.h>
 
 #include "fts-digistar.h"
 #include "fts-usb.h"
 
-#if defined (OPTION_USB)
+//#if defined (OPTION_USB)
 
 static int usb_tester(void)
 {
@@ -33,4 +34,4 @@ struct fts_test usb_test = {
 		.next = NULL,
 };
 
-#endif
+//#endif

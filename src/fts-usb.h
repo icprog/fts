@@ -8,10 +8,10 @@
 #ifndef FTS_USB_H_
 #define FTS_USB_H_
 
-#if defined (OPTION_USB)
+//#if defined (OPTION_USB)
 
 struct fts_test usb_test;
 
-#endif
+//#endif
 
 #endif /* FTS_USB_H_ */

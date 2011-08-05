@@ -327,7 +327,8 @@ int main(int argc, char **argv)
 #endif
 
 #ifndef CONFIG_DIGISTAR_RCG700
-	fts_register_test(&modem3g_test);
+	fts_register_test(&modem3g_test_sc1);
+	fts_register_test(&modem3g_test_sc2);
 	fts_register_test(&usb_test);
 #endif
 

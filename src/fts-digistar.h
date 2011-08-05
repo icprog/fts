@@ -38,7 +38,7 @@
 #error "Board not supported"
 #endif
 
-
+int pinger(char *ipaddr, char *device);
 int ping(char *ipaddr, char *device, int size);
 int set_ipaddr(char *dev, char *addr, char *mask);
 
