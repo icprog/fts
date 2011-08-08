@@ -10,16 +10,37 @@
 #include <syslog.h>
 #include <string.h>
 #include <stdlib.h>
+#include <signal.h>
+#include <fcntl.h>
+#include <errno.h>
+
+#include <linux/types.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <net/if.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include <librouter/options.h>
 #include <librouter/modem3G.h>
 #include <librouter/dev.h>
+#include <librouter/usb.h>
 
 #include "fts-digistar.h"
 #include "fts-modem3g.h"
 
 #if defined (OPTION_MODEM3G)
+
+static int modem3g_verify_usb()
+{
+	if (!librouter_usb_device_is_connected(MODEM3G_USB_PORT)){
+		printf(" - [FAIL]\n");
+		return -1;
+	}
+
+	return 0;
+}
 
 static int modem3g_test_ping(char *dev, char *ipdest)
 {
@@ -55,7 +76,7 @@ static int modem3g_verify_link(void)
 		printf(".");
 		sleep(1);
 	}
-	printf("\n");
+	printf(" - [FAIL]\n");
 	return -1;
 }
 
@@ -118,6 +139,12 @@ static int modem3g_test_init_SC1(void)
 {
 	int scard = 1;
 
+	printf("Verifying modem3G USB port...");
+	if (modem3g_verify_usb() < 0)
+		return -1;
+
+	printf(" - [OK]\n");
+
 	printf("Starting modem3G HW / Sim Card Selection...");
 	if (librouter_modem3g_sim_card_set(SIM_CARD_P1) < 0)
 		return -1;
@@ -132,7 +159,7 @@ static int modem3g_test_init_SC1(void)
 
 	printf("Starting link verification - ");
 	if (modem3g_verify_link() < 0){
-		printf(" - [FAIL]\n");
+		modem3g_stop_connection();
 		return -1;
 	}
 	printf("Link Online - Sim Card on Port [%d]... - [OK]\n", scard);
@@ -143,6 +170,12 @@ static int modem3g_test_init_SC1(void)
 static int modem3g_test_init_SC2(void)
 {
 	int scard = 2;
+
+	printf("Verifying modem3G USB port...");
+	if (modem3g_verify_usb() < 0)
+		return -1;
+
+	printf(" - [OK]\n");
 
 	printf("Starting modem3G HW / Sim Card Selection...");
 	if (librouter_modem3g_sim_card_set(SIM_CARD_P2) < 0)
@@ -158,7 +191,6 @@ static int modem3g_test_init_SC2(void)
 
 	printf("Starting link verification - ");
 	if (modem3g_verify_link() < 0){
-		printf(" - [FAIL]\n");
 		modem3g_stop_connection();
 		return -1;
 	}

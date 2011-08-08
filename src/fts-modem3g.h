@@ -13,6 +13,7 @@
 #define SIM_CARD_P1 1
 #define SIM_CARD_P2 0
 #define MAX_WAIT_TIME_CONNECTION_3G 120
+#define MODEM3G_USB_PORT 3
 #define MODEM3G_BUILTIN "ppp0"
 #define PPPD_BIN_FILE 	"/bin/pppd"
 #define IP_DEST_TEST_3G "8.8.8.8"

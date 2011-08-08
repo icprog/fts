@@ -19,7 +19,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <net/if.h>
-#include <netinet/ip_icmp.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
