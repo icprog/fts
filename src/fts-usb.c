@@ -30,8 +30,11 @@
 
 //#if defined (OPTION_USB)
 
-static int usb_dongle_compare(librouter_usb_dev * usb)
+static int usb_dongle_compare(librouter_usb_dev * usb, int enable)
 {
+	if (!enable)
+		return 0;
+
 	switch (usb->port) {
 		case USB_PORT_1:
 			if ( (usb->product_id == USB_P1_IDPRODUCT) && (usb->vendor_id == USB_P1_IDVENDOR) )
@@ -60,7 +63,8 @@ static int usb_test_port(int usb_port)
 	if (librouter_usb_device_is_connected(usb.port)){
 		if (librouter_usb_get_descriptor(&usb) < 0)
 			goto usb_end;
-		if (usb_dongle_compare(&usb) < 0)
+
+		if (usb_dongle_compare(&usb, USB_DONGLE_COMPARE_ENABLE) < 0)
 			goto usb_end;
 
 			printf("- [OK]\n");

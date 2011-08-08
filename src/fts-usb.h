@@ -10,6 +10,13 @@
 
 //#if defined (OPTION_USB)
 
+/*######################################################################################
+ * Verificação OPCIONAL..
+ * pode ser atribuido valor 0 a fim de evitar dependencia com um modelo determinado de PENDRIVE
+ */
+#define USB_DONGLE_COMPARE_ENABLE 1
+/*#####################################################################################*/
+
 #define USB_PORT_1		 1
 #define USB_PORT_2		 2
 
