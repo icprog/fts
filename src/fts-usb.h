@@ -10,6 +10,15 @@
 
 //#if defined (OPTION_USB)
 
+#define USB_PORT_1		 1
+#define USB_PORT_2		 2
+
+#define USB_P1_IDPRODUCT 5699
+#define USB_P1_IDVENDOR  2385
+
+#define USB_P2_IDPRODUCT 5699
+#define USB_P2_IDVENDOR  2385
+
 struct fts_test usb_test;
 
 //#endif
