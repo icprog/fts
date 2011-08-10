@@ -175,7 +175,7 @@ int ping(char *ipaddr, char *device, int size)
 	}
 
 	/* listen for replies */
-	i = 50; /* Number of attempts */
+	i = 35; /* Number of attempts */
 	while (i--) {
 		struct sockaddr_in from;
 		socklen_t fromlen = sizeof(from);
