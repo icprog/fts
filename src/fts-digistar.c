@@ -79,13 +79,11 @@ static void show_welcome_string()
 static void show_product_id(void)
 {
 	printf("$I%s\n",MODEL);
-	syslog(LOG_CRIT,"$I%s\n",MODEL);
 }
 
 static void fts_digistar_test_end(void)
 {
 	printf("\n$Ffim do teste de fabrica\n\n");
-	syslog(LOG_CRIT,"$Ffim do teste de fabrica\n");
 }
 
 #if 0
@@ -177,7 +175,7 @@ int ping(char *ipaddr, char *device, int size)
 	}
 
 	/* listen for replies */
-	i = 30; /* Number of attempts */
+	i = 50; /* Number of attempts */
 	while (i--) {
 		struct sockaddr_in from;
 		socklen_t fromlen = sizeof(from);
@@ -208,8 +206,6 @@ int ping(char *ipaddr, char *device, int size)
 int set_ipaddr(char *dev, char *addr, char *mask)
 {
 	char cmd_sys[256];
-
-	syslog(LOG_CRIT, "Configurando [%s] com %s/%s", dev, addr, mask);
 
 	memset(&cmd_sys, 0, sizeof(cmd_sys));
 	snprintf(cmd_sys, sizeof(cmd_sys), "/sbin/ifconfig %s up %s netmask %s", dev, addr, mask);
@@ -323,7 +319,6 @@ int main(int argc, char **argv)
 
 #ifndef CONFIG_DIGISTAR_RCG800
 	fts_register_test(&ethwan_test);
-	fts_register_test(&ethwan_SFP_test);
 #endif
 
 #ifndef CONFIG_DIGISTAR_RCG700
