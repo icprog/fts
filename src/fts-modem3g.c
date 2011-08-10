@@ -157,7 +157,7 @@ static int modem3g_test_init_SC1(void)
 
 	printf(" - [OK]\n");
 
-	printf("Iniciando verificação de Link - ");
+	printf("Iniciando verificacao de Link - ");
 	if (modem3g_verify_link() < 0){
 		modem3g_stop_connection();
 		return -1;
