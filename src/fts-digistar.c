@@ -307,6 +307,9 @@ int main(int argc, char **argv)
 	syslog(LOG_INFO, "FTS-Digistar Starting ...\n");
 	save_termios();
 
+	fts_register_test(&rtc_test);
+	fts_register_test(&flash_test);
+
 #if defined(CONFIG_DIGISTAR_3G)
 
 /* ###############################################################
@@ -333,9 +336,6 @@ int main(int argc, char **argv)
 #else
 #error "Board not suppoted"
 #endif
-
-	fts_register_test(&rtc_test);
-	fts_register_test(&flash_test);
 
 	main_fts();
 
