@@ -12,19 +12,26 @@
 
 #include <librouter/options.h>
 #include <librouter/bcm53115s.h>
+#include <librouter/lan.h>
 
 #include "fts-digistar.h"
 #include "fts-ethernet.h"
 
 static int ethernet_test(char *dev, char *ipaddr, char *mask, char *ipdest)
 {
+	struct lan_status st;
 	int ret = -1;
 	int n = 500;
+	memset(&st, 0, sizeof(struct lan_status));
 
 	if (set_ipaddr(dev, ipaddr, mask) < 0)
 		return -1;
 
 	sleep(5);
+
+	if(librouter_lan_get_status(dev, &st) < 0)
+		return -1;
+	printf(" - Speed [%d]",st.speed);
 
 	while (n){
 		 if ( (ret = ping(ipdest, dev, 64 + n)) == 0)
