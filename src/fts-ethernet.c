@@ -19,19 +19,53 @@
 
 static int ethernet_test(char *dev, char *ipaddr, char *mask, char *ipdest)
 {
-	struct lan_status st;
 	int ret = -1;
 	int n = 500;
+#ifdef CONFIG_DIGISTAR_3G
+	struct lan_status st;
 	memset(&st, 0, sizeof(struct lan_status));
+#endif
 
 	if (set_ipaddr(dev, ipaddr, mask) < 0)
 		return -1;
 
 	sleep(5);
 
-	if(librouter_lan_get_status(dev, &st) < 0)
+#ifdef CONFIG_DIGISTAR_3G
+	if (librouter_lan_get_status(dev, &st) < 0)
 		return -1;
-	printf(" - Speed [%d]",st.speed);
+	printf (" - Link [%d]", st.speed);
+#endif
+
+	while (n){
+		 if ( (ret = ping(ipdest, dev, 64 + n)) == 0)
+			 break;
+		 n--;
+	}
+
+	if (ret < 0){
+		printf(" - [FAIL]\n");
+		printf("%% ERRO com ping tamanho %d\n", n + 64);
+	}
+	else
+		printf(" - [OK]\n");
+
+	return ret;
+}
+
+static int ethernet_test_lan(char *dev, char *ipaddr, char *mask, char *ipdest, int port)
+{
+	int ret = -1;
+	int n = 500;
+
+	if (set_ipaddr(dev, ipaddr, mask) < 0)
+		return -1;
+
+	sleep(5);
+
+#ifdef CONFIG_DIGISTAR_3G
+	printf (" - Link [%d]", librouter_bcm53115s_get_port_speed(port));
+#endif
 
 	while (n){
 		 if ( (ret = ping(ipdest, dev, 64 + n)) == 0)
@@ -103,7 +137,7 @@ static int port_switch_test(int port)
 		return -1;
 
 	printf("LAN - P%d: Executando Ping para host %s",port+1, HOST_1_PING);
-	ret |= ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_1_PING);
+	ret |= ethernet_test_lan(LAN_DEV, LAN_IP, LAN_MASK, HOST_1_PING, port);
 	ret |= set_switch_port_enable(!enable, port);
 
 	if (ret < 0)
