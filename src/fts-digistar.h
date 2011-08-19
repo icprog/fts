@@ -24,15 +24,7 @@
 #elif defined(CONFIG_DIGISTAR_EFM)
 #define SERIES "ETL-SERIES ROUTER/BRIDGE"
 
-#if defined(CONFIG_DIGISTAR_ETL8110)
-#define MODEL "ETL-8110"
-#elif defined(CONFIG_DIGISTAR_ETL8210)
-#define MODEL "ETL-8210"
-#elif defined(CONFIG_DIGISTAR_ETL8221)
-#define MODEL "ETL-8221"
-#elif defined(CONFIG_DIGISTAR_ETL8421)
-#define MODEL "ETL-8421"
-#endif
+#define MODEL	"ETL-8110" /* FIXME Make a librouter function */
 
 #else
 #error "Board not supported"
