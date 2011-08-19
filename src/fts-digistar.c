@@ -291,6 +291,8 @@ static int main_fts()
 
 	alarm(0); /* Remove schedule of SIGALRM */
 
+	printf("Teste de Hardware Daemon\n");
+
 	/*Show product model*/
 	show_product_id();
 
