@@ -175,7 +175,7 @@ int ping(char *ipaddr, char *device, int size)
 	}
 
 	/* listen for replies */
-	i = 35; /* Number of attempts */
+	i = 100; /* Number of attempts */
 	while (i--) {
 		struct sockaddr_in from;
 		socklen_t fromlen = sizeof(from);
@@ -239,10 +239,12 @@ static int do_tests(void)
 
 		while (1) {
 			if (fts_get_answer() == 0) {
+				printf("$T%s:\n", t->name);
 				printf("$RSKIP\n");
 				break;
 			}
 
+			printf("$T%s:\n", t->name);
 			if (t->hw_init != NULL) {
 				ret = t->hw_init();
 				if  (ret < 0)
@@ -251,12 +253,11 @@ static int do_tests(void)
 
 			if (t->test != NULL) {
 				ret = t->test();
-				if  (ret < 0)
-					goto test_err;
 			}
 
-			if (t->hw_stop != NULL)
-				ret = t->hw_stop();
+			if (t->hw_stop != NULL) {
+				t->hw_stop();
+			}
 
 test_err:
 			if (ret == 0) {

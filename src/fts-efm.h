@@ -8,8 +8,9 @@
 #ifndef FTS_EFM_H_
 #define FTS_EFM_H_
 
-#define EFM_MAX_CONNECTION_TIME		260 /* valor aumentado de 180 para 260, devido a falha na primeira tentativa de conex do EFM*/
+#define EFM_MAX_CONNECTION_TIME		240
 #define EFM_MAX_ACCEPTED_ERRORS		5
+#define EFM_SHDSL_LINERATE		5704
 
 #define EFM_DEV 	"eth1"
 #define EFM_IPADDR 	"10.0.0.90"

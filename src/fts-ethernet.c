@@ -37,17 +37,16 @@ static int ethernet_test(char *dev, char *ipaddr, char *mask, char *ipdest)
 	printf (" - Link [%d]", st.speed);
 #endif
 
-	while (n){
-		 if ( (ret = ping(ipdest, dev, 64 + n)) == 0)
-			 break;
-		 n--;
+	while (n) {
+		if ((ret = ping(ipdest, dev, 64 + n)) == 0)
+			break;
+		n--;
 	}
 
-	if (ret < 0){
-		printf(" - [FAIL]\n");
+	if (ret < 0) {
+		printf(" - [FALHA]\n");
 		printf("%% ERRO com ping tamanho %d\n", n + 64);
-	}
-	else
+	} else
 		printf(" - [OK]\n");
 
 	return ret;
@@ -67,17 +66,16 @@ static int ethernet_test_lan(char *dev, char *ipaddr, char *mask, char *ipdest, 
 	printf (" - Link [%d]", librouter_bcm53115s_get_port_speed(port));
 #endif
 
-	while (n){
-		 if ( (ret = ping(ipdest, dev, 64 + n)) == 0)
-			 break;
-		 n--;
+	while (n) {
+		if ((ret = ping(ipdest, dev, 64 + n)) == 0)
+			break;
+		n--;
 	}
 
-	if (ret < 0){
-		printf(" - [FAIL]\n");
+	if (ret < 0) {
+		printf(" - [FALHA]\n");
 		printf("%% ERRO com ping tamanho %d\n", n + 64);
-	}
-	else
+	} else
 		printf(" - [OK]\n");
 
 	return ret;
@@ -85,7 +83,7 @@ static int ethernet_test_lan(char *dev, char *ipaddr, char *mask, char *ipdest, 
 
 static int ethernet_wan_test(void)
 {
-	printf("WAN: Executando Ping para host %s",HOST_0_PING);
+	printf("$TWAN: Executando Ping para host %s", HOST_0_PING);
 	if (ethernet_test(WAN_DEV, WAN_IP, WAN_MASK, HOST_0_PING) < 0)
 		return -1;
 
@@ -107,8 +105,8 @@ static int set_switch_test_port_mode(int enable)
 	enable = !enable;
 
 	for (i = 0; i < LAN_N_PORTS; ++i) {
-			if (librouter_bcm53115s_set_MII_port_enable(enable,i) < 0)
-				return -1;
+		if (librouter_bcm53115s_set_MII_port_enable(enable, i) < 0)
+			return -1;
 	}
 
 	sleep(3);
@@ -132,11 +130,11 @@ static int port_switch_test(int port)
 {
 	int enable = 1, ret = 0;
 
-	printf("LAN: Testando porta [%d]\n", port+1);
+	printf("$TLAN: Testando porta [%d]\n", port + 1);
 	if (set_switch_port_enable(enable, port) < 0)
 		return -1;
 
-	printf("LAN - P%d: Executando Ping para host %s",port+1, HOST_1_PING);
+	printf("$TLAN - P%d: Executando Ping para host %s", port + 1, HOST_1_PING);
 	ret |= ethernet_test_lan(LAN_DEV, LAN_IP, LAN_MASK, HOST_1_PING, port);
 	ret |= set_switch_port_enable(!enable, port);
 
@@ -151,15 +149,15 @@ static int ethernet_lan_test(void)
 #if defined(CONFIG_DIGISTAR_3G)
 	int enable = 1, ret = 0, i = 0;
 
-	printf("LAN: Configurando modo de teste da LAN. Desativando todas as portas.\n\n");
+	printf("$TLAN: Configurando modo de teste da LAN. Desativando todas as portas.\n");
 	if (set_switch_test_port_mode(enable) < 0)
 		return -1;
 
-	for (i = 0; i < LAN_N_PORTS; i++){
+	for (i = 0; i < LAN_N_PORTS; i++) {
 		ret |= port_switch_test(i);
 	}
 
-	printf("\nLAN: Restaurando modo normal de funcionamento da LAN. Ativando todas as portas.\n");
+	printf("$TLAN: Restaurando modo normal de funcionamento da LAN. Ativando todas as portas.\n");
 	ret |= set_switch_test_port_mode(!enable);
 
 	if (ret < 0)
@@ -167,7 +165,7 @@ static int ethernet_lan_test(void)
 
 	return 0;
 #elif defined(CONFIG_DIGISTAR_EFM)
-	printf("LAN: Executando Ping para host %s",HOST_1_PING);
+	printf("$TLAN: Executando Ping para host %s",HOST_1_PING);
 	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_1_PING) < 0)
 		return -1;
 

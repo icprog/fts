@@ -72,14 +72,14 @@ static int rtc_tester(void)
 		return -1;
 	}
 
-	printf("Configuracao RTC aplicada!\n");
+	printf("$TConfiguracao RTC aplicada!\n");
 
 	usleep(5000);
 
 	while(i++ < RTC_NUM_READS) {
 		sleep(RTC_TIME_SLEEP);
 
-		printf("Leitura do RTC apos %d seg.\n", i);
+		printf("$TLeitura do RTC apos %d seg.\n", i);
 
 		if (rtc_get_time(&time2) < 0) {
 			return -1;
@@ -98,7 +98,7 @@ static int rtc_tester(void)
 static int rtc_test_init(void)
 {
 	char buf[128];
-	printf("Salvando Hora do Sistema: ");
+	printf("$TSalvando Hora do Sistema: ");
 	librouter_time_get_rtc_date(&ctm);
 	strftime(buf, sizeof(buf), "%a %b %e %H:%M:%S %Z %Y", &ctm);
 	puts(buf);
@@ -107,7 +107,7 @@ static int rtc_test_init(void)
 
 static int rtc_test_exit(void)
 {
-	printf("Restaurando Hora do Sistema: ");
+	printf("$TRestaurando Hora do Sistema: ");
 	if (librouter_time_set_date_from_tm(&ctm) < 0) {
 		printf("[FAIL]\n");
 		return -1;

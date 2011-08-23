@@ -32,10 +32,19 @@ static int do_dsp_connection(void)
 		.mode = GTI_CPE,
 	};
 
-	printf("Inicializando DSP... ");
+	printf("$TResetando DSP ...");
+	if (librouter_efm_reset() < 0) {
+		printf("[FALHA]\n");
+		return -1;
+	}
+	printf("[OK]\n");
+
+	printf("$TInicializando DSP... ");
 	/* Assure that the DSP is disabled */
 	if (librouter_efm_enable(0) < 0)
 		return -1;
+
+	sleep(2);
 
 	/* Set CPE mode */
 	if (librouter_efm_set_mode(&conf) < 0)
@@ -56,7 +65,7 @@ static int check_dsp_connection(void)
 	int i = EFM_MAX_CONNECTION_TIME;
 	struct orionplus_stat stat[4];
 
-	printf("Esperando conexao dos canais SHDSL ...");
+	printf("$TEsperando conexao dos canais SHDSL ...");
 	fflush(stdout);
 
 	while(--i) {
@@ -83,9 +92,40 @@ static int check_dsp_connection(void)
 	}
 
 	printf("[OK]\n");
+	printf("$TConexao concluida em %d segundos\n", EFM_MAX_CONNECTION_TIME - i);
 
-	printf("Conexao concluida em %d segundos\n", EFM_MAX_CONNECTION_TIME - i);
+	for (i = 0; i < 4; i++) {
+		printf("$TTaxa da linha do canal %d: %dkbps ... ", i, stat[0].bitrate[0]);
+		if (stat[0].bitrate[0] != EFM_SHDSL_LINERATE) {
+			printf("[FALHA]\n");
+			return -1;
+		} else
+			printf("[OK]\n");
+	}
 
+	printf("$TVerificando estabilidade do link ...");
+	i = 5;
+	while (--i) {
+		char msk = 0x0;
+		int k;
+
+		if (librouter_efm_get_status(stat) < 0)
+			return -1;
+
+		msk = 0;
+		for (k = 0; k < 4; k++) {
+			msk |= (stat[k].channel_st == CHANNEL_STATE_CONNECTED) ? (0x1 << k) : 0;
+		}
+
+		if (msk == 0xf) /* All 4 channels connected! */
+			sleep(1);
+		else {
+			printf("[FALHA]\n");
+			return -1;
+		}
+	}
+
+	printf("[OK]\n");
 
 	return 0;
 }
@@ -136,12 +176,13 @@ static int efm_do_test(void)
 		sleep(1);
 	}
 
-	printf("Tempo de espera até primeiro ping voltar: %d segundos\n", i);
+	printf("$TTempo de espera até primeiro ping voltar: %d segundos\n", i);
 
-	 while (--n) {
+	while (--n) {
 		 ret = ping(EFM_IPDEST, EFM_DEV, 64 + n);
-		 if (ret < 0)
+		 if (ret < 0) {
 			 err++;
+		 }
 
 		 if (err > EFM_MAX_ACCEPTED_ERRORS)
 			 break;
@@ -159,7 +200,7 @@ static int efm_do_test(void)
 static int efm_hw_stop(void)
 {
 	/* Disable DSP */
-	printf("Desativando DSP ...");
+	printf("$TDesativando DSP ...");
 	if (librouter_efm_enable(0) < 0) {
 		printf("[FALHA]\n");
 		return -1;

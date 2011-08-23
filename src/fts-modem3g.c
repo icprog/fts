@@ -126,7 +126,7 @@ static int modem3g_stop_connection(void)
 
 static int modem3g_tester(void)
 {
-	printf("Iniciando teste do Modem3G...");
+	printf("$TIniciando teste do Modem3G...");
 	if (modem3g_test_ping(MODEM3G_BUILTIN, IP_DEST_TEST_3G) < 0){
 		modem3g_stop_connection();
 		return -1;
@@ -139,30 +139,30 @@ static int modem3g_test_init_SC1(void)
 {
 	int scard = 1;
 
-	printf("Verificando porta USB do Modem3G...");
+	printf("$TVerificando porta USB do Modem3G...");
 	if (modem3g_verify_usb() < 0)
 		return -1;
 
 	printf(" - [OK]\n");
 
-	printf("Inicializando HW Modem3G / Configuracao de SIM Card...");
+	printf("$TInicializando HW Modem3G / Configuracao de SIM Card...");
 	if (librouter_modem3g_sim_card_set(SIM_CARD_P1) < 0)
 		return -1;
 
 	printf(" - [OK]\n");
 
-	printf("Inicializando conexao 3G, utilizando SIM Card da porta [%d]...",scard);
+	printf("$TInicializando conexao 3G, utilizando SIM Card da porta [%d]...",scard);
 	if (modem3g_start_connection(scard) < 0)
 		return -1;
 
 	printf(" - [OK]\n");
 
-	printf("Iniciando verificacao de Link - ");
+	printf("$TIniciando verificacao de Link - ");
 	if (modem3g_verify_link() < 0){
 		modem3g_stop_connection();
 		return -1;
 	}
-	printf("Link Online - SIM Card na porta [%d]... - [OK]\n", scard);
+	printf("$TLink Online - SIM Card na porta [%d]... - [OK]\n", scard);
 
 	return 0;
 }
@@ -171,37 +171,37 @@ static int modem3g_test_init_SC2(void)
 {
 	int scard = 2;
 
-	printf("Verificando porta USB do Modem3G...");
+	printf("$TVerificando porta USB do Modem3G...");
 	if (modem3g_verify_usb() < 0)
 		return -1;
 
 	printf(" - [OK]\n");
 
-	printf("Inicializando HW Modem3G / Configuracao de SIM Card...");
+	printf("$TInicializando HW Modem3G / Configuracao de SIM Card...");
 	if (librouter_modem3g_sim_card_set(SIM_CARD_P2) < 0)
 		return -1;
 
 	printf(" - [OK]\n");
 
-	printf("Inicializando conexao 3G, utilizando SIM Card da porta [%d]...",scard);
+	printf("$TInicializando conexao 3G, utilizando SIM Card da porta [%d]...",scard);
 	if (modem3g_start_connection(scard) < 0)
 		return -1;
 
 	printf(" - [OK]\n");
 
-	printf("Iniciando verificacao de Link - ");
+	printf("$TIniciando verificacao de Link - ");
 	if (modem3g_verify_link() < 0){
 		modem3g_stop_connection();
 		return -1;
 	}
-	printf("Link Online - SIM Card na porta [%d]... - [OK]\n", scard);
+	printf("$TLink Online - SIM Card na porta [%d]... - [OK]\n", scard);
 
 	return 0;
 }
 
 static int modem3g_test_exit(void)
 {
-	printf("Desativando HW Modem3G...");
+	printf("$TDesativando HW Modem3G...");
 	if (modem3g_stop_connection() < 0){
 		printf(" - [FAIL]\n");
 		return -1;
