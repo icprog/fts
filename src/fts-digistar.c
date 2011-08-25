@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -216,6 +217,30 @@ int set_ipaddr(char *dev, char *addr, char *mask)
 	return 0;
 }
 
+void print_ok_msg(int ok)
+{
+	if (ok)
+		printf("$ROK\n");
+	else
+		printf("$RERRO\n");
+}
+
+void print_test_info(char *fmt, ...)
+{
+        va_list args;
+        char buf[1024];
+
+        va_start(args, fmt);
+        vsprintf(buf, fmt, args);
+        va_end(args);
+
+	if (strstr(buf,"\n"))
+		printf("$T        %s", buf);
+	else
+		printf("$T        %s\n", buf);
+}
+
+
 static int startup_test(void)
 {
 	show_welcome_string();
@@ -260,10 +285,11 @@ static int do_tests(void)
 			}
 
 test_err:
+			printf("$T%s:\n", t->name);
 			if (ret == 0) {
-				printf("\n$ROK\n\n");
+				printf("$ROK\n\n");
 			} else {
-				printf("\n$RERROR\n\n");
+				printf("$RERROR\n\n");
 			}
 
 			printf("$QRepetir %s?\n", t->name);

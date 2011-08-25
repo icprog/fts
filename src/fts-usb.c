@@ -58,7 +58,7 @@ static int usb_test_port(int usb_port)
 	memset(&usb, 0, sizeof(librouter_usb_dev));
 	usb.port = usb_port;
 
-	printf("$TVerificando porta USB [%d] ", usb.port);
+	print_test_info("Verificando porta USB [%d] ", usb.port);
 	if (librouter_usb_device_is_connected(usb.port)) {
 		if (librouter_usb_get_descriptor(&usb) < 0)
 			goto usb_end;
@@ -66,14 +66,16 @@ static int usb_test_port(int usb_port)
 		if (usb_dongle_compare(&usb, USB_DONGLE_COMPARE_ENABLE) < 0)
 			goto usb_end;
 
-		printf("- [OK]\n");
-		printf("$TDispositivo USB na porta %d\n", usb.port);
-		printf("\tProduct_ID [%04x] - %s / Vendor_ID [%04x] - %s\n\n", usb.product_id,
+		print_ok_msg(1);
+		print_test_info("Dispositivo USB na porta %d\n", usb.port);
+		print_test_info("Product_ID [%04x] - %s / Vendor_ID [%04x] - %s\n\n", usb.product_id,
 		                usb.product_str, usb.vendor_id, usb.manufacture_str);
 		return 0;
 	}
 
-	usb_end: printf("- [FAIL]\n\n");
+usb_end:
+	print_ok_msg(0);
+
 	return -1;
 }
 

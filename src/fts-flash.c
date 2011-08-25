@@ -71,7 +71,7 @@ static int flash_compare_data(char * filename)
 
 static int flash_load_test_file(void)
 {
-	printf("$TCarregando configuracao teste [default] para flash");
+	print_test_info("Carregando configuracao teste [default] para flash");
 	if (librouter_nv_save_configuration(DEV_DEFAULT_CONFIG) < 0)
 		return -1;
 
@@ -80,7 +80,7 @@ static int flash_load_test_file(void)
 
 static int flash_restore_residual_data(void)
 {
-	printf("$TRestaurando configuracao salva para flash");
+	print_test_info("Restaurando configuracao salva para flash");
 	if (librouter_nv_save_configuration(FLASH_FILE_SAVED_DATA) < 0)
 		return -1;
 
@@ -111,7 +111,7 @@ static int flash_testing(void)
 
 static int flash_backup(void)
 {
-	printf("$TSalvando configuracao existente em flash");
+	print_test_info("Salvando configuracao existente em flash");
 	if (flash_save_residual_data_to_file(FLASH_FILE_SAVED_DATA) < 0)
 		return -1;
 
@@ -123,24 +123,24 @@ static int flash_tester(void)
 	int ret = 0;
 
 	if (flash_backup() < 0){
-		printf("$TFlash nao possui dados validos. Ignorando backup da flash\n");
+		print_test_info("Flash nao possui dados validos. Ignorando backup da flash\n");
 		ret = -1;
 	}
 	else
-		printf (" - [OK]\n");
+		print_ok_msg(1);
 
 	if (flash_testing() < 0)
 		return -1;
 	else
-		printf (" - [OK]\n");
+		print_ok_msg(1);
 
 	if (!ret){
 		if (flash_restore() < 0)
 			return -1;
-		printf (" - [OK]\n");
+		print_ok_msg(1);
 	}
 	else
-		printf("$TIgnorando restore de backup da flash\n");
+		print_test_info("Ignorando restore de backup da flash\n");
 
 	return 0;
 }

@@ -32,14 +32,14 @@ static int do_dsp_connection(void)
 		.mode = GTI_CPE,
 	};
 
-	printf("$TResetando DSP ...");
+	print_test_info("Resetando DSP ");
 	if (librouter_efm_reset() < 0) {
-		printf("[FALHA]\n");
+		print_ok_msg(0);
 		return -1;
 	}
-	printf("[OK]\n");
+	print_ok_msg(1);
 
-	printf("$TInicializando DSP... ");
+	print_test_info("Inicializando DSP ");
 	/* Assure that the DSP is disabled */
 	if (librouter_efm_enable(0) < 0)
 		return -1;
@@ -54,7 +54,7 @@ static int do_dsp_connection(void)
 	if (librouter_efm_enable(1) < 0)
 		return -1;
 
-	printf("[OK]\n");
+	print_ok_msg(1);
 
 	return 0;
 }
@@ -65,7 +65,7 @@ static int check_dsp_connection(void)
 	int i = EFM_MAX_CONNECTION_TIME;
 	struct orionplus_stat stat[4];
 
-	printf("$TEsperando conexao dos canais SHDSL ...");
+	print_test_info("Esperando conexao dos canais SHDSL ");
 	fflush(stdout);
 
 	while(--i) {
@@ -87,23 +87,24 @@ static int check_dsp_connection(void)
 	}
 
 	if (i == 0) {
-		printf("[TIMEOUT]\n");
+		print_test_info("Timeout na conexão dos canais!\n");
+		print_ok_msg(0);
 		return -1;
 	}
 
-	printf("[OK]\n");
-	printf("$TConexao concluida em %d segundos\n", EFM_MAX_CONNECTION_TIME - i);
+	print_ok_msg(1);
+	print_test_info("Conexao concluida em %d segundos\n", EFM_MAX_CONNECTION_TIME - i);
 
 	for (i = 0; i < 4; i++) {
-		printf("$TTaxa da linha do canal %d: %dkbps ... ", i, stat[0].bitrate[0]);
+		print_test_info("Taxa da linha do canal %d: %dkbps  ", i, stat[0].bitrate[0]);
 		if (stat[0].bitrate[0] != EFM_SHDSL_LINERATE) {
-			printf("[FALHA]\n");
+			print_ok_msg(0);
 			return -1;
 		} else
-			printf("[OK]\n");
+			print_ok_msg(1);
 	}
 
-	printf("$TVerificando estabilidade do link ...");
+	print_test_info("Verificando estabilidade do link ");
 	i = 5;
 	while (--i) {
 		char msk = 0x0;
@@ -120,12 +121,12 @@ static int check_dsp_connection(void)
 		if (msk == 0xf) /* All 4 channels connected! */
 			sleep(1);
 		else {
-			printf("[FALHA]\n");
+			print_ok_msg(0);
 			return -1;
 		}
 	}
 
-	printf("[OK]\n");
+	print_ok_msg(1);
 
 	return 0;
 }
@@ -176,7 +177,7 @@ static int efm_do_test(void)
 		sleep(1);
 	}
 
-	printf("$TTempo de espera até primeiro ping voltar: %d segundos\n", i);
+	print_test_info("Tempo de espera até primeiro ping voltar: %d segundos", i);
 
 	while (--n) {
 		 ret = ping(EFM_IPDEST, EFM_DEV, 64 + n);
@@ -192,7 +193,7 @@ static int efm_do_test(void)
 
 
 	 if (ret < 0)
-		 printf("ERRO com ping tamanho %d\n", n + 64);
+		 print_test_info("Erro com ping tamanho %d\n", n + 64);
 
 	 return ret;
 }
@@ -200,13 +201,13 @@ static int efm_do_test(void)
 static int efm_hw_stop(void)
 {
 	/* Disable DSP */
-	printf("$TDesativando DSP ...");
+	print_test_info("Desativando DSP ");
 	if (librouter_efm_enable(0) < 0) {
-		printf("[FALHA]\n");
+		print_ok_msg(0);
 		return -1;
 	}
 
-	printf("[OK]\n");
+	print_ok_msg(1);
 
 	return 0;
 }

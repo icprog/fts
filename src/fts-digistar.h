@@ -33,6 +33,8 @@
 int pinger(char *ipaddr, char *device);
 int ping(char *ipaddr, char *device, int size);
 int set_ipaddr(char *dev, char *addr, char *mask);
+void print_ok_msg(int ok);
+void print_test_info(char *fmt, ...);
 
 
 struct fts_test {
