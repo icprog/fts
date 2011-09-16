@@ -170,6 +170,12 @@ static int ethernet_lan_test(void)
 		return -1;
 
 	return 0;
+#elif defined(CONFIG_DIGISTAR_EFM4ETH)
+	print_test_info("LAN: Executando Ping para host %s",HOST_1_PING);
+	if (ethernet_test(LAN_DEV, LAN_IP, LAN_MASK, HOST_1_PING) < 0)
+		return -1;
+
+	return 0;
 #else
 #error "Board not suppoted"
 #endif

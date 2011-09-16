@@ -362,6 +362,9 @@ int main(int argc, char **argv)
 #elif defined(CONFIG_DIGISTAR_EFM)
 	fts_register_test(&ethlan_test);
 	fts_register_test(&efm_test);
+#elif defined(CONFIG_DIGISTAR_EFM4ETH)
+	fts_register_test(&ethlan_test);
+	fts_register_test(&efm_test);
 #else
 #error "Board not suppoted"
 #endif
