@@ -8,7 +8,7 @@
 #ifndef FTS_ETHERNET_H_
 #define FTS_ETHERNET_H_
 
-#include <linux/autoconf.h>
+#include <librouter/options.h>
 
 #ifdef CONFIG_DEVELOPMENT
 #define PD3_LOCAL_TEST

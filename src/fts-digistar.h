@@ -21,12 +21,17 @@
 #define MODEL "RCG-700"
 #endif
 
+#elif defined (CONFIG_DIGISTAR_MRG)
+#define SERIES "MRG-SERIES ROUTER/BRIDGE"
+#define MODEL  "MRG-1234" /* FIXME Make a librouter function */
+
 #elif defined(CONFIG_DIGISTAR_EFM)
 #define SERIES "ETL-SERIES ROUTER/BRIDGE"
 #define MODEL	"ETL-8110" /* FIXME Make a librouter function */
 #elif defined(CONFIG_DIGISTAR_EFM4ETH)
 #define SERIES "ETL-SERIES ROUTER/BRIDGE"
 #define MODEL	"ETL-8110" /* FIXME Make a librouter function */
+
 #else
 #error "Board not supported"
 #endif
