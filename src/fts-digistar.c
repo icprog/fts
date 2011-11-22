@@ -339,7 +339,7 @@ int main(int argc, char **argv)
 	fts_register_test(&rtc_test);
 	fts_register_test(&flash_test);
 
-#if defined(CONFIG_DIGISTAR_3G)
+#if (defined CONFIG_DIGISTAR_3G) || (defined CONFIG_DIGISTAR_MRG)
 
 /* ###############################################################
  * RCG 1000 – Produto completo

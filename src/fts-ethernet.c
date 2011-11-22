@@ -21,7 +21,7 @@ static int ethernet_test(char *dev, char *ipaddr, char *mask, char *ipdest)
 {
 	int ret = -1;
 	int n = 500;
-#ifdef CONFIG_DIGISTAR_3G
+#if (defined CONFIG_DIGISTAR_3G) || (defined CONFIG_DIGISTAR_MRG)
 	struct lan_status st;
 	memset(&st, 0, sizeof(struct lan_status));
 #endif
@@ -31,7 +31,7 @@ static int ethernet_test(char *dev, char *ipaddr, char *mask, char *ipdest)
 
 	sleep(5);
 
-#ifdef CONFIG_DIGISTAR_3G
+#if (defined CONFIG_DIGISTAR_3G) || (defined CONFIG_DIGISTAR_MRG)
 	if (librouter_lan_get_status(dev, &st) < 0)
 		return -1;
 	printf (" - Link [%d]", st.speed);
@@ -62,7 +62,7 @@ static int ethernet_test_lan(char *dev, char *ipaddr, char *mask, char *ipdest, 
 
 	sleep(5);
 
-#ifdef CONFIG_DIGISTAR_3G
+#if (defined CONFIG_DIGISTAR_3G) || (defined CONFIG_DIGISTAR_MRG)
 	printf (" - Link [%d]", librouter_bcm53115s_get_port_speed(port));
 #endif
 
@@ -146,7 +146,7 @@ static int port_switch_test(int port)
 
 static int ethernet_lan_test(void)
 {
-#if defined(CONFIG_DIGISTAR_3G)
+#if (defined CONFIG_DIGISTAR_3G) || (defined CONFIG_DIGISTAR_MRG)
 	int enable = 1, ret = 0, i = 0;
 
 	print_test_info("LAN: Configurando modo de teste da LAN. Desativando todas as portas.\n");
