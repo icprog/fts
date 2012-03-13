@@ -86,7 +86,7 @@ static int modem3g_start_connection(int scard)
 
 	memset(cmd, 0, sizeof(cmd));
 
-	sprintf(cmd, "/bin/pppd call FTS_sim%d_modem-3g-0",scard);
+	sprintf(cmd, "%s call FTS_sim%d_modem-3g-0",PPPD_BIN_FILE, scard);
 	if (system(cmd) != 0)
 		return -1;
 

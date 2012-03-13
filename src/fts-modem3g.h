@@ -15,7 +15,7 @@
 #define MAX_WAIT_TIME_CONNECTION_3G 120
 #define MODEM3G_USB_PORT 3
 #define MODEM3G_BUILTIN "ppp0"
-#define PPPD_BIN_FILE 	"/bin/pppd"
+#define PPPD_BIN_FILE 	"/sbin/pppd"
 #define IP_DEST_TEST_3G "8.8.8.8"
 #define MODEM3G_PPPD_PID "/var/run/ppp0.pid"
 
